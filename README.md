@@ -3,7 +3,7 @@ For automating the generation of large batches of AI artwork utilizing VQGAN+CLI
 
 # Setup
 
-These instructions were tested on a Windows 10 system with an Nvidia 3080 Ti GPU (12GB VRAM) and 32GB of system memory, but should work on linux systems as well with some minor edits. 
+These instructions were tested on a Windows 10 system with an Nvidia 3080 Ti GPU (12GB VRAM) and 32GB of system memory, but should work on linux systems as well with some minor edits. Note that 12GB of VRAM is sufficient for 512x512 output images, and 8GB should be enough for 380x380.
 
 **[1]** Install [Anaconda](https://www.anaconda.com/products/individual), open the root terminal, and create a new environment (and activate it):
 ```
