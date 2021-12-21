@@ -57,4 +57,11 @@ You'll also need to install the transformers package for most of these to work:
 ```
 pip install transformers
 ```
+
+**[8]** (Optional) Test VQGAN+CLIP:  
+```
+python generate.py -i 200 -p "a red apple"
+```
+You should see output.png created, which should loosely resemble an apple.
+
 # Usage
