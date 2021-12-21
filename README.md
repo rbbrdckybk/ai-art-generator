@@ -1,5 +1,6 @@
-# ai-art-generator
-For automating the generation of large batches of AI artwork utilizing VQGAN+CLIP.
+# AI Art Generator
+For automating the creation of large batches of AI-generated artwork utilizing VQGAN+CLIP locally.
+![](/samples/sample 01.png)
 
 # Setup
 
