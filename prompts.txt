@@ -1,0 +1,9 @@
+# Put your prompts here, one per line
+# Multi-part prompts are supported, use | to separate each piece
+# Use :# to indicate relative weights at the end of each prompt if desired, where # is a number (negatives ok)
+# some examples:
+
+a monkey on a motorcycle
+a swimming pool full of trash
+an eggplant | red and blue | a dark smokey background
+a portrait of a dog:300 | brown:-100

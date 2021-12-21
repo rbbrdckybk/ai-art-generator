@@ -1,0 +1,6 @@
+# Put your styles here, one per line
+
+watercolor
+vibrant
+matte painting
+abstract
