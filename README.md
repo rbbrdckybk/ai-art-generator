@@ -8,9 +8,17 @@ Some example images that VQGAN is capable of creating (these are cherry-picked e
 <img src="/samples/sample05.png" width="300">
 <img src="/samples/sample06.png" width="300">
 
+# Requirements
+
+You'll need an Nvidia GPU, preferably with a decent amount of VRAM. 12GB of VRAM is sufficient for 512x512 output images, and 8GB should be enough for 380x380. To generate 1024x1024 images, you'll need ~24GB of VRAM (not tested by me). Generating images at 512x512 and then upscaling via some other machine-learning package provides very good results as well.
+
+It's possible to run on an AMD GPU, but you'll need to be on Linux to install the ROCm version of Pytorch. I don't have a decent GPU to throw into a Linux machine so I haven't tested this myself.
+
+It's also possible to run VQGAN entirely on a CPU, but it'll be orders of magnitude slower and isn't really feasible for anything serious.
+
 # Setup
 
-These instructions were tested on a Windows 10 system with an Nvidia 3080 Ti GPU (12GB VRAM) and 32GB of system memory, but should work on linux systems as well with some minor edits. Note that 12GB of VRAM is sufficient for 512x512 output images, and 8GB should be enough for 380x380.
+These instructions were tested on a Windows 10 system with an Nvidia 3080 Ti GPU (12GB VRAM) and 32GB of system memory, but should work on Linux systems as well with some minor edits. 
 
 **[1]** Install [Anaconda](https://www.anaconda.com/products/individual), open the root terminal, and create a new environment (and activate it):
 ```
@@ -37,7 +45,7 @@ pip install ftfy regex tqdm omegaconf pytorch-lightning IPython kornia imageio i
 git clone https://github.com/rbbrdckybk/ai-art-generator
 cd ai-art-generator
 ```
-Note that linux users may need single quotes around the URL in the clone command.
+Note that Linux users may need single quotes around the URL in the clone command.
 
 **[5]** Clone additional required repositories:
 ```
@@ -51,7 +59,7 @@ mkdir checkpoints
 curl -L -o checkpoints/vqgan_imagenet_f16_16384.yaml -C - "https://heibox.uni-heidelberg.de/d/a7530b09fed84f80a887/files/?p=%2Fconfigs%2Fmodel.yaml&dl=1"
 curl -L -o checkpoints/vqgan_imagenet_f16_16384.ckpt -C - "https://heibox.uni-heidelberg.de/d/a7530b09fed84f80a887/files/?p=%2Fckpts%2Flast.ckpt&dl=1"
 ```
-Note that linux users should replace the double quotes in the curl commands with single quotes.
+Note that Linux users should replace the double quotes in the curl commands with single quotes.
 
 **[7]** (Optional) Download additional pre-trained models:  
 Additional models are not necessary, but provide you with more options. [Here is a good list of available pre-trained models](https://github.com/CompVis/taming-transformers#overview-of-pretrained-models).  
