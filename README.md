@@ -30,8 +30,15 @@ pip install ftfy regex tqdm omegaconf pytorch-lightning IPython kornia imageio i
 git clone https://github.com/rbbrdckybk/ai-art-generator
 cd ai-art-generator
 ```
+Note that linux users may need single quotes around the URL in the clone command.
 
-**[5]** Download the default VQGAN pre-trained model checkpoint files:
+**[5]** Clone additional required repositories:
+```
+git clone https://github.com/openai/CLIP
+git clone https://github.com/CompVis/taming-transformers
+```
+
+**[6]** Download the default VQGAN pre-trained model checkpoint files:
 ```
 mkdir checkpoints
 curl -L -o checkpoints/vqgan_imagenet_f16_16384.yaml -C - "https://heibox.uni-heidelberg.de/d/a7530b09fed84f80a887/files/?p=%2Fconfigs%2Fmodel.yaml&dl=1"
@@ -39,7 +46,7 @@ curl -L -o checkpoints/vqgan_imagenet_f16_16384.ckpt -C - "https://heibox.uni-he
 ```
 Note that linux users should replace the double quotes in the curl commands with single quotes.
 
-**[6]** (Optional) Download additional pre-trained models:  
+**[7]** (Optional) Download additional pre-trained models:  
 Additional models are not necessary, but provide you with more options. [Here is a good list of available pre-trained models](https://github.com/CompVis/taming-transformers#overview-of-pretrained-models).  
 For example, if you also wanted the FFHQ model (trained on faces): 
 ```
