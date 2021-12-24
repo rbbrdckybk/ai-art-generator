@@ -80,3 +80,5 @@ python generate.py -i 200 -p "a red apple"
 You should see output.png created, which should loosely resemble an apple.
 
 # Usage
+
+TODO
