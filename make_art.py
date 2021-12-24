@@ -109,7 +109,7 @@ class Controller:
                 print("*** (press 'F10' again to unpause, or <ESC> to quit) ***\n")
         else:
             with print_lock:
-                print("\n\n*** Work resuming! ***\n")
+                print("\n*** Work resuming! ***\n")
 
     # allow exit at user request if currently paused
     def exit_callback(self):
