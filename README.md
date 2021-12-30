@@ -37,7 +37,7 @@ Note that you can customize your Pytorch installation by using [the online tool 
 conda install m2-base
 conda install -c anaconda git
 conda install -c anaconda urllib3
-pip install keyboard ftfy regex tqdm omegaconf pytorch-lightning IPython kornia imageio imageio-ffmpeg einops torch_optimizer
+pip install keyboard pillow ftfy regex tqdm omegaconf pytorch-lightning IPython kornia imageio imageio-ffmpeg einops torch_optimizer
 ```
 
 **[4]** Clone this repository and switch to its directory:
