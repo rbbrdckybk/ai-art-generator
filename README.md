@@ -10,7 +10,7 @@ Some example images that VQGAN is capable of creating (cherry-picked examples; a
 
 # Requirements
 
-You'll need an Nvidia GPU, preferably with a decent amount of VRAM. 12GB of VRAM is sufficient for 512x512 output images, and 8GB should be enough for 380x380. To generate 1024x1024 images, you'll need ~24GB of VRAM (not tested by me). Generating images at 512x512 and then upscaling via some other machine-learning package provides very good results as well.
+You'll need an Nvidia GPU, preferably with a decent amount of VRAM. 12GB of VRAM is sufficient for 512x512 output images, and 8GB should be enough for 384x384. To generate 1024x1024 images, you'll need ~24GB of VRAM (not tested by me). Generating images at 512x512 and then upscaling via some other machine-learning package provides very good results as well.
 
 It's possible to run on an AMD GPU, but you'll need to be on Linux to install the ROCm version of Pytorch. I don't have a decent GPU to throw into a Linux machine so I haven't tested this myself.
 
@@ -75,10 +75,18 @@ pip install transformers
 
 **[8]** (Optional) Test VQGAN+CLIP:  
 ```
-python generate.py -i 200 -p "a red apple"
+python generate.py -s 128 128 -i 200 -p "a red apple"
 ```
 You should see output.png created, which should loosely resemble an apple.
 
 # Usage
 
-TODO
+Essentially, you'll populate two files: **prompts.txt** and **styles.txt**. The **prompts.txt** file contains all of the prompts that you want to feed to VQGAN+CLIP, and the **styles.txt** file contains the styles that you want each prompt to be rendered in. If you have 5 prompts in your **prompts.txt** file, and 20 styles in your **styles.txt** file, then a total of 100 output images will be created (20 style images for each prompt).  
+
+Output images are created in the **output** directory by default. A directory will be created for each prompt, and a PNG image file named for each style will be created inside of the prompt directory.  
+
+Examples for both the **prompts.txt** and **styles.txt** files are included. After you've populated them to your liking, you can simply run:
+```
+python make_art.py
+```
+Depending on your hardware and settings, each image will take anywhere from several seconds to a few minutes to create.
