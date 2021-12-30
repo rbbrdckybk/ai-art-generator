@@ -7,13 +7,16 @@ import keyboard
 import unicodedata
 import re
 import random
+from os.path import exists
 from pathlib import Path
 from collections import deque
+from PIL.PngImagePlugin import PngImageFile, PngInfo
 
+# these can be overriden with prompt file directives, no need to change them here
 ITERATIONS = 500        # number of times to run, default is 500
 LEARNING_RATE = 0.1     # default = 0.1
 INPUT_IMAGE = ""        # path and filename of starting image, eg: samples/vectors/face_07.png
-TRANSFORMER = ""        # needs to be a .yaml and .ckpt file in /checkpoints directory for whatever is specified here
+TRANSFORMER = ""        # needs to be a .yaml and .ckpt file in /checkpoints directory for whatever is specified here, default = vqgan_imagenet_f16_16384
 
 # Prevent threads from printing at same time.
 print_lock = threading.Lock()
@@ -27,14 +30,22 @@ class Worker(threading.Thread):
 
     def run(self):
         with print_lock:
-            print("\n\nWorker starting, command: " + self.command)
+            print("\nWorker starting, command: " + self.command)
 
         # create output folder if it doesn't exist
-        filepath = self.command.split(" -o ",1)[1]
-        filepath = filepath.replace(filepath[filepath.rindex('/'):], "")
+        fullfilepath = self.command.split(" -o ",1)[1]
+        filepath = fullfilepath.replace(fullfilepath[fullfilepath.rindex('/'):], "")
         Path(filepath).mkdir(parents=True, exist_ok=True)
         # invoke VQGAN+CLIP
         subprocess.call(shlex.split(self.command))
+
+        # save generation details in PNG metadata
+        if exists(fullfilepath):
+            pngImage = PngImageFile(fullfilepath)
+            metadata = PngInfo()
+            metadata.add_text("VQGAN+CLIP", self.command)
+            pngImage.save(fullfilepath, pnginfo=metadata)
+            pngImage.close()
 
         with print_lock:
             print("Worker done.")
@@ -59,7 +70,7 @@ class Controller:
         self.jobs_done = 0
         self.styles = []
         keyboard.on_press_key("f10", lambda _:self.pause_callback())
-        keyboard.on_press_key("esc", lambda _:self.exit_callback())
+        keyboard.on_press_key("f9", lambda _:self.exit_callback())
         self.init_work_queue()
 
     # build a work queue with the specified prompt and style files
@@ -71,23 +82,57 @@ class Controller:
 
         # construct work queue consisting of all prompt+style combos
         while self.prompt_file.lines_remaining() > 0:
-            base = "python generate.py -i " + str(self.iterations) + " -lr " + str(self.learning_rate) + " -p \""
+
             subject = self.prompt_file.next_line()
-            base += subject
-            outdir="output/" + slugify(subject)
+            # if this is a setting directive, handle it
+            while subject[0] == '!' and self.prompt_file.lines_remaining() > 0:
+                self.change_setting(subject)
+                subject = self.prompt_file.next_line()
 
-            for style in self.styles:
-                work = base + " | " + style + "\""
+            # in case setting directives are placed at the end of the prompt file
+            if subject[0] != '!':
+                base = "python generate.py -i " + str(self.iterations) + " -lr " + str(self.learning_rate) + " -p \""
+                base += subject
+                outdir="output/" + slugify(subject)
 
-                if self.input_image != "":
-                    work += " -ii " + self.input_image
-                if self.transformer != "":
-                    work += " -conf checkpoints/" + self.transformer + ".yaml -ckpt checkpoints/" + self.transformer + ".ckpt"
+                for style in self.styles:
+                    work = base + " | " + style + "\""
 
-                seed = random.randint(100000000000000,999999999999999)
-                work += " -sd " + str(seed) + " -o " + outdir + "/" + slugify(style) + ".png"
+                    if self.input_image != "":
+                        work += " -ii " + self.input_image
+                    if self.transformer != "":
+                        work += " -conf checkpoints/" + self.transformer + ".yaml -ckpt checkpoints/" + self.transformer + ".ckpt"
 
-                self.work_queue.append(work)
+                    seed = random.randint(100000000000000,999999999999999)
+                    work += " -sd " + str(seed) + " -o " + outdir + "/" + slugify(style) + ".png"
+
+                    self.work_queue.append(work)
+
+    # handle whatever settings directives that are allowed in the prompt file here
+    def change_setting(self, setting_string):
+        ss = re.search('!(.+?)=', setting_string)
+        if ss:
+            command = ss.group(1).lower().strip()
+            value = setting_string.split("=",1)[1].strip()
+
+            # python switch
+            if command == 'iterations':
+                self.iterations = value
+
+            elif command == 'learning_rate':
+                self.learning_rate = value
+
+            elif command == 'input_image':
+                self.input_image = value
+
+            elif command == 'transformer':
+                if value == 'vqgan_imagenet_f16_16384':
+                    value = ''
+                self.transformer = value
+
+            else:
+                print("\n*** WARNING: prompt file command not recognized: " + command.upper() + " (it will be ignored!) ***\n")
+                time.sleep(1.5)
 
     # start a new worker thread
     def do_work(self, command):
@@ -106,7 +151,7 @@ class Controller:
         if self.is_paused:
             with print_lock:
                 print("\n\n*** Work will be paused when current operation finishes! ***")
-                print("*** (press 'F10' again to unpause, or <ESC> to quit) ***\n")
+                print("*** (press 'F10' again to unpause, or 'F9' to quit) ***\n")
         else:
             with print_lock:
                 print("\n*** Work resuming! ***\n")
@@ -158,8 +203,9 @@ if __name__ == '__main__':
         # worker is idle, start some work
         if (control.worker_idle and not control.is_paused):
             if len(control.work_queue) > 0:
-                control.do_work(control.work_queue.popleft())
-
+                # get a new prompt or setting directive from the queue
+                new_work = control.work_queue.popleft()
+                control.do_work(new_work)
             else:
                 # no more prompts to work on
                 print('\nAll work done!')
