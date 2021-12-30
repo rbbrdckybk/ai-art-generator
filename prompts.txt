@@ -9,7 +9,10 @@ a swimming pool full of trash
 
 # change settings, all prompts below this will now use these new values
 # make sure your specified input_image and transformer exist (see readme)
+!WIDTH = 128
+!HEIGHT = 128
 !ITERATIONS = 650
+!CUTS = 64
 !LEARNING_RATE = 0.085
 !INPUT_IMAGE = samples/vectors/face_01.png
 !TRANSFORMER = ffhq
@@ -17,7 +20,7 @@ a swimming pool full of trash
 # a multi-part example
 an eggplant | red and blue | a dark smokey background
 
-# these settings can be returned to their defaults by setting them to nothing
+# settings can be returned to their defaults by setting them to nothing
 !INPUT_IMAGE = 
 !TRANSFORMER = 
 
