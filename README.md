@@ -83,10 +83,58 @@ You should see output.png created, which should loosely resemble an apple.
 
 Essentially, you'll populate two files: **prompts.txt** and **styles.txt**. The **prompts.txt** file contains all of the prompts that you want to feed to VQGAN+CLIP, and the **styles.txt** file contains the styles that you want each prompt to be rendered in. If you have 5 prompts in your **prompts.txt** file, and 20 styles in your **styles.txt** file, then a total of 100 output images will be created (20 style images for each prompt).  
 
-Output images are created in the **output** directory by default. A directory will be created for each prompt, and a PNG image file named for each style will be created inside of the prompt directory.  
+Output images are created in the **output** directory by default. A directory will be created for each prompt, and a PNG image file named for each style will be created inside of the prompt directory. So for example, if you have "a monkey on a motorcycle" as one of your prompts, output images will be created in output/a-monkey-on-a-motorcycle/.
 
 Examples for both the **prompts.txt** and **styles.txt** files are included. After you've populated them to your liking, you can simply run:
 ```
 python make_art.py
 ```
-Depending on your hardware and settings, each image will take anywhere from several seconds to a few minutes to create.
+Depending on your hardware and settings, each image will take anywhere from several seconds to a few minutes to create.  
+
+You can press **F10** any time to pause execution (the pause will take effect when the current image is finished rendering). Press **F10** again to unpause. Useful if you're running this on your primary computer and need to use your GPU for something else for awhile.
+
+The VQGAN+CLIP settings used to create each image are saved as metadata in each output PNG file by default. You can read the metadata info back by using the included **png_read.py** utility. For example:
+```
+python png_read.py output/a-monkey-on-a-motorcycle/watercolor.png
+```
+Should return all of the parameters used to create the image (including the random seed), as long as make_art.py was used to create the PNG originally.
+
+# Advanced Usage
+
+Directives can be included in the prompts.txt file to modify VQGAN+CLIP settings for all prompts that follow it. These settings directives are specified by putting them on their own line inside of the prompt file, in the following format:  
+
+**![setting to change] = [new value]**  
+
+For **[setting to change]**, valid directives are:  
+ * WIDTH
+ * HEIGHT
+ * ITERATIONS
+ * LEARNING_RATE
+ * CUTS
+ * INPUT_IMAGE
+ * TRANSFORMER
+ * OPTIMISER
+ * CLIP_MODEL
+
+Some examples:  
+```
+!WIDTH = 384
+!HEIGHT = 384
+```
+This will set the output image size to 384x384. A larger output size requires more GPU VRAM.
+```
+!TRANSFORMER = ffhq
+```
+This will tell VQGAN to use the FFHQ transformer (somewhat better at faces), instead of the default (vqgan_imagenet_f16_16384). You can follow step 7 in the setup instructions above to get the ffhq transformer, along with a link to several others.
+
+Whatever you specify here MUST exist in the checkpoints directory as a .ckpt and .yaml file.
+```
+!INPUT_IMAGE = samples/face-input.jpg
+```
+This will have VQGAN use samples/face-input.jpg (or whatever image you specify) as the starting image, instead of the default random white noise. Input images should be the same aspect ratio as your output images for best results.
+```
+!INPUT_IMAGE = 
+```
+Setting any of these values to nothing will return it to its default. So in this example, VQGAN will go back to generating random white noise as its starting image.
+
+TODO: finish settings examples & add usage tips/examples
