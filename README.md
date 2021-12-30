@@ -91,6 +91,8 @@ python make_art.py
 ```
 Depending on your hardware and settings, each image will take anywhere from several seconds to a few minutes to create.  
 
+You can press **F10** any time to pause execution (the pause will take effect when the current image is finished rendering). Press **F10** again to unpause. Useful if you're running this on your primary computer and need to use your GPU for something else for awhile.
+
 The VQGAN+CLIP settings used to create each image are saved as metadata in each output PNG file by default. You can read the metadata info back by using the included **png_read.py** utility. For example:
 ```
 python png_read.py output/a-monkey-on-a-motorcycle/watercolor.png
