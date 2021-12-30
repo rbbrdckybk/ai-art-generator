@@ -13,10 +13,15 @@ from collections import deque
 from PIL.PngImagePlugin import PngImageFile, PngInfo
 
 # these can be overriden with prompt file directives, no need to change them here
+WIDTH = 512             # output image width, default is 512
+HEIGHT = 512            # output image height, default is 512
 ITERATIONS = 500        # number of times to run, default is 500
 LEARNING_RATE = 0.1     # default = 0.1
+CUTS = 32               # default = 32
 INPUT_IMAGE = ""        # path and filename of starting image, eg: samples/vectors/face_07.png
 TRANSFORMER = ""        # needs to be a .yaml and .ckpt file in /checkpoints directory for whatever is specified here, default = vqgan_imagenet_f16_16384
+CLIP_MODEL = ""         # default = ViT-B/32
+OPTIMISER = ""          # default = Adam
 
 # Prevent threads from printing at same time.
 print_lock = threading.Lock()
@@ -30,7 +35,7 @@ class Worker(threading.Thread):
 
     def run(self):
         with print_lock:
-            print("\nWorker starting, command: " + self.command)
+            print("\n\nWorker starting, command: " + self.command)
 
         # create output folder if it doesn't exist
         fullfilepath = self.command.split(" -o ",1)[1]
@@ -41,11 +46,10 @@ class Worker(threading.Thread):
 
         # save generation details in PNG metadata
         if exists(fullfilepath):
-            pngImage = PngImageFile(fullfilepath)
             metadata = PngInfo()
             metadata.add_text("VQGAN+CLIP", self.command)
-            pngImage.save(fullfilepath, pnginfo=metadata)
-            pngImage.close()
+            targetImage.save(fullfilepath, pnginfo=metadata)
+            targetImage = PngImageFile(fullfilepath)
 
         with print_lock:
             print("Worker done.")
@@ -56,10 +60,15 @@ class Worker(threading.Thread):
 class Controller:
     def __init__(self):
 
+        self.width = WIDTH
+        self.height = HEIGHT
         self.iterations = ITERATIONS
         self.learning_rate = LEARNING_RATE
+        self.cuts = CUTS
         self.input_image = INPUT_IMAGE
         self.transformer = TRANSFORMER
+        self.clip_model = CLIP_MODEL
+        self.optimiser = OPTIMISER
 
         self.prompt_file = TextFile('prompts.txt')
         self.style_file = TextFile('styles.txt')
@@ -91,7 +100,12 @@ class Controller:
 
             # in case setting directives are placed at the end of the prompt file
             if subject[0] != '!':
-                base = "python generate.py -i " + str(self.iterations) + " -lr " + str(self.learning_rate) + " -p \""
+                base = "python generate.py" \
+                    + " -s " + str(self.width) + " " + str(self.height) \
+                    + " -i " + str(self.iterations) \
+                    + " -lr " + str(self.learning_rate) \
+                    + " -cuts " + str(self.cuts) \
+                    + " -p \""
                 base += subject
                 outdir="output/" + slugify(subject)
 
@@ -102,6 +116,10 @@ class Controller:
                         work += " -ii " + self.input_image
                     if self.transformer != "":
                         work += " -conf checkpoints/" + self.transformer + ".yaml -ckpt checkpoints/" + self.transformer + ".ckpt"
+                    if self.clip_model != "":
+                        work += " -m " + self.clip_model
+                    if self.optimiser != "":
+                        work += " -opt " + self.optimiser
 
                     seed = random.randint(100000000000000,999999999999999)
                     work += " -sd " + str(seed) + " -o " + outdir + "/" + slugify(style) + ".png"
@@ -116,11 +134,30 @@ class Controller:
             value = setting_string.split("=",1)[1].strip()
 
             # python switch
-            if command == 'iterations':
+            if command == 'width':
+                if value == '':
+                    value = WIDTH
+                self.width = value
+
+            elif command == 'height':
+                if value == '':
+                    value = HEIGHT
+                self.height = value
+
+            elif command == 'iterations':
+                if value == '':
+                    value = ITERATIONS
                 self.iterations = value
 
             elif command == 'learning_rate':
+                if value == '':
+                    value = LEARNING_RATE
                 self.learning_rate = value
+
+            elif command == 'cuts':
+                if value == '':
+                    value = CUTS
+                self.cuts = value
 
             elif command == 'input_image':
                 self.input_image = value
@@ -129,6 +166,12 @@ class Controller:
                 if value == 'vqgan_imagenet_f16_16384':
                     value = ''
                 self.transformer = value
+
+            elif command == 'clip_model':
+                self.clip_model = value
+
+            elif command == 'optimiser':
+                self.optimiser = value
 
             else:
                 print("\n*** WARNING: prompt file command not recognized: " + command.upper() + " (it will be ignored!) ***\n")
