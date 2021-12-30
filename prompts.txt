@@ -1,9 +1,27 @@
 # Put your prompts here, one per line
-# Multi-part prompts are supported, use | to separate each piece
+# Multi-part prompts are ok; use | to separate each piece
 # Use :# to indicate relative weights at the end of each prompt if desired, where # is a number (negatives ok)
-# some examples:
+# Use ! followed by a supported setting name to change the value of it for all prompts that follow it (see readme and examples)
 
+# some basic examples:
 a monkey on a motorcycle
 a swimming pool full of trash
+
+# change settings, all prompts below this will now use these new values
+# make sure your specified input_image and transformer exist (see readme)
+!ITERATIONS = 650
+!LEARNING_RATE = 0.085
+!INPUT_IMAGE = samples/vectors/face_01.png
+!TRANSFORMER = ffhq
+
+# a multi-part example
 an eggplant | red and blue | a dark smokey background
-a portrait of a dog:300 | brown:-100
+
+# these settings can be returned to their defaults by setting them to nothing
+!INPUT_IMAGE = 
+!TRANSFORMER = 
+
+# a multi-part example where the dog portrait is very important, the background is somewhat important, and "blue" should be avoided
+a portrait of a dog:300 | a dark background:100 | blue:-100
+
+
