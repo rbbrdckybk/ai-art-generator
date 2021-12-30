@@ -133,6 +133,6 @@ This will have VQGAN use samples/face-input.jpg (or whatever image you specify) 
 ```
 !INPUT_IMAGE = 
 ```
-Setting anything to nothing will return it to its default value. So in this example, VQGAN will go back to generating random white noise as its starting image.
+Setting any of these values to nothing will return it to its default. So in this example, VQGAN will go back to generating random white noise as its starting image.
 
 TODO: finish settings examples & add usage tips/examples
