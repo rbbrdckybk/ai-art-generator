@@ -46,7 +46,7 @@ class Worker(threading.Thread):
 
         # save generation details in PNG metadata
         if exists(fullfilepath):
-            pngImage = Image.open(fullfilename)
+            pngImage = PngImageFile(fullfilepath)
             metadata = PngInfo()
             metadata.add_text("VQGAN+CLIP", self.command)
             pngImage.save(fullfilepath, pnginfo=metadata)
