@@ -34,10 +34,8 @@ Note that you can customize your Pytorch installation by using [the online tool 
 
 **[3]** Install other required Python packages:
 ```
-conda install m2-base
-conda install -c anaconda git
-conda install -c anaconda urllib3
-pip install keyboard pillow ftfy regex tqdm omegaconf pytorch-lightning IPython kornia imageio imageio-ffmpeg einops torch_optimizer
+conda install -c anaconda git urllib3
+pip install transformers keyboard pillow ftfy regex tqdm omegaconf pytorch-lightning IPython kornia imageio imageio-ffmpeg einops torch_optimizer
 ```
 
 **[4]** Clone this repository and switch to its directory:
@@ -68,10 +66,6 @@ For example, if you also wanted the FFHQ model (trained on faces):
 curl -L -o checkpoints/ffhq.yaml -C - "https://app.koofr.net/content/links/0fc005bf-3dca-4079-9d40-cdf38d42cd7a/files/get/2021-04-23T18-19-01-project.yaml?path=%2F2021-04-23T18-19-01_ffhq_transformer%2Fconfigs%2F2021-04-23T18-19-01-project.yaml&force"
 curl -L -o checkpoints/ffhq.ckpt -C - "https://app.koofr.net/content/links/0fc005bf-3dca-4079-9d40-cdf38d42cd7a/files/get/last.ckpt?path=%2F2021-04-23T18-19-01_ffhq_transformer%2Fcheckpoints%2Flast.ckpt"
 ```
-You'll also need to install the transformers package for many of these to work:
-```
-pip install transformers
-```
 
 **[8]** (Optional) Test VQGAN+CLIP:  
 ```
@@ -89,7 +83,11 @@ Examples for both the **prompts.txt** and **styles.txt** files are included. Aft
 ```
 python make_art.py
 ```
-Depending on your hardware and settings, each image will take anywhere from several seconds to a few minutes to create.  
+Note that Linux users will need to run with root privileges due to the inclusion of the keyboard module:
+```
+sudo env "PATH=$PATH" python make_art.py
+```
+Depending on your hardware and settings, each image will take anywhere from several seconds to a few minutes to create.
 
 You can press **F10** any time to pause execution (the pause will take effect when the current image is finished rendering). Press **F10** again to unpause. Useful if you're running this on your primary computer and need to use your GPU for something else for awhile.
 
