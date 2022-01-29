@@ -1959,6 +1959,9 @@ if iargs.max_iterations and iargs.max_iterations >= 250:
 else:
     intermediate_saves = 0
 
+# comment this to enable intermediate saves, TODO add as prompt file option
+intermediate_saves = 0#@param{type: 'raw'}
+
 intermediates_in_subfolder = True #@param{type: 'boolean'}
 #@markdown Intermediate steps will save a copy at your specified intervals. You can either format it as a single integer or a list of specific steps
 

@@ -46,7 +46,7 @@ a shining lighthouse on the shore of a tropical island in a raging storm
 
 
 # *******************************************************************************
-# styles go here - think of these are directives in how to render the subject
+# styles go here - think of these as directives in how to render the subject
 # these are optional
 # *******************************************************************************
 [styles]
