@@ -1,7 +1,0 @@
-# Put your styles here, one per line
-# some examples:
-
-watercolor
-vibrant
-matte painting
-abstract
