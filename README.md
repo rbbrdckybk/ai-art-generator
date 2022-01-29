@@ -67,9 +67,9 @@ curl -L -o checkpoints/ffhq.ckpt -C - "https://app.koofr.net/content/links/0fc00
 
 **[8]** (Optional) Test VQGAN+CLIP:  
 ```
-python vqgan.py -s 128 128 -i 200 -p "a red apple" -o output.png
+python vqgan.py -s 128 128 -i 200 -p "a red apple" -o output/output.png
 ```
-You should see output.png created, which should loosely resemble an apple.
+You should see output.png created in the output directory, which should loosely resemble an apple.
 
 **[9]** Install packages for CLIP-guided diffusion (if you're only interested in VQGAN+CLIP, you can skip everything from here to the end): 
 ```
@@ -97,7 +97,7 @@ Note that Linux users should again replace the double quotes in the curl command
 ```
 python diffusion.py -s 128 128 -i 200 -p "a red apple" -o output.png
 ```
-You should see output.png created, which should loosely resemble an apple.
+You should see output.png created in the output directory, which should loosely resemble an apple.
 
 # Usage
 
