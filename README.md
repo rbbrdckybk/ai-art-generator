@@ -69,7 +69,7 @@ curl -L -o checkpoints/ffhq.ckpt -C - "https://app.koofr.net/content/links/0fc00
 
 **[8]** (Optional) Test VQGAN+CLIP:  
 ```
-python vqgan.py -s 128 128 -i 200 -p "a red apple"
+python vqgan.py -s 128 128 -i 200 -p "a red apple" -o output.png
 ```
 You should see output.png created, which should loosely resemble an apple.
 
@@ -86,7 +86,7 @@ git clone https://github.com/assafshocher/ResizeRight.git
 git clone https://github.com/CompVis/latent-diffusion.git
 ```
 
-**[11]** Download the default VQGAN pre-trained model checkpoint files:
+**[11]** Download models needed for CLIP-guided diffusion:
 ```
 mkdir content\models
 curl -L -o content/models/256x256_diffusion_uncond.pt -C - "https://openaipublic.blob.core.windows.net/diffusion/jul-2021/256x256_diffusion_uncond.pt"
@@ -94,6 +94,12 @@ curl -L -o content/models/512x512_diffusion_uncond_finetune_008100.pt -C - "http
 curl -L -o content/models/secondary_model_imagenet_2.pth -C - "https://v-diffusion.s3.us-west-2.amazonaws.com/secondary_model_imagenet_2.pth"
 ```
 Note that Linux users should again replace the double quotes in the curl commands with single quotes.
+
+**[12]** (Optional) Test CLIP-guided diffusion:  
+```
+python diffusion.py -s 128 128 -i 200 -p "a red apple" -o output.png
+```
+You should see output.png created, which should loosely resemble an apple.
 
 
 # Usage
