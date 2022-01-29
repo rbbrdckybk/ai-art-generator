@@ -155,10 +155,10 @@ Whatever you specify here MUST exist in the checkpoints directory as a .ckpt and
 ```
 !INPUT_IMAGE = samples/face-input.jpg
 ```
-This will have VQGAN use samples/face-input.jpg (or whatever image you specify) as the starting image, instead of the default random white noise. Input images should be the same aspect ratio as your output images for best results.
+This will use samples/face-input.jpg (or whatever image you specify) as the starting image, instead of the default random white noise. Input images must be the same aspect ratio as your output images for good results.
 ```
 !INPUT_IMAGE = 
 ```
-Setting any of these values to nothing will return it to its default. So in this example, VQGAN will go back to generating random white noise as its starting image.
+Setting any of these values to nothing will return it to its default. So in this example, no starting image will be used.
 
 TODO: finish settings examples & add usage tips/examples
