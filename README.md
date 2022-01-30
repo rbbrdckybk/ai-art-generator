@@ -12,7 +12,7 @@ Some example images that I've created via this process (these are cherry-picked 
 
 You'll need an Nvidia GPU, preferably with a decent amount of VRAM. 12GB of VRAM is sufficient for 512x512 output images, and 8GB should be enough for 384x384. To generate 1024x1024 images, you'll need ~24GB of VRAM. Generating small images and then upscaling via [ESRGAN](https://github.com/xinntao/Real-ESRGAN) or some other package provides very good results as well.
 
-It's possible to run on an AMD GPU, but you'll need to be on Linux to install the ROCm version of Pytorch. I don't have a decent GPU to throw into a Linux machine so I haven't tested this myself.
+It should be possible to run on an AMD GPU, but you'll need to be on Linux to install the ROCm version of Pytorch. I don't have an AMD GPU to throw into a Linux machine so I haven't tested this myself.
 
 # Setup
 
