@@ -80,8 +80,8 @@ conda install pandas
 **[10]** Clone repositories for CLIP-guided diffusion:
 ```
 git clone https://github.com/crowsonkb/guided-diffusion
-git clone https://github.com/assafshocher/ResizeRight.git
-git clone https://github.com/CompVis/latent-diffusion.git
+git clone https://github.com/assafshocher/ResizeRight
+git clone https://github.com/CompVis/latent-diffusion
 ```
 
 **[11]** Download models needed for CLIP-guided diffusion:
