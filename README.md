@@ -90,6 +90,9 @@ mkdir content\models
 curl -L -o content/models/256x256_diffusion_uncond.pt -C - "https://openaipublic.blob.core.windows.net/diffusion/jul-2021/256x256_diffusion_uncond.pt"
 curl -L -o content/models/512x512_diffusion_uncond_finetune_008100.pt -C - "http://batbot.tv/ai/models/guided-diffusion/512x512_diffusion_uncond_finetune_008100.pt"
 curl -L -o content/models/secondary_model_imagenet_2.pth -C - "https://v-diffusion.s3.us-west-2.amazonaws.com/secondary_model_imagenet_2.pth"
+mkdir content\models\superres
+curl -L -o content/models/superres/project.yaml -C - "https://heibox.uni-heidelberg.de/f/31a76b13ea27482981b4/?dl=1"
+curl -L -o content/models/superres/last.ckpt -C - "https://heibox.uni-heidelberg.de/f/578df07c8fc04ffbadf3/?dl=1"
 ```
 Note that Linux users should again replace the double quotes in the curl commands with single quotes.
 
