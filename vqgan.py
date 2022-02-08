@@ -682,6 +682,8 @@ print('Using device:', device)
 print('Optimising using:', args.optimiser)
 
 if args.prompts:
+    for x in range(len(args.prompts)):
+        args.prompts[x] = args.prompts[x].strip()
     print('Using text prompts:', args.prompts)
 if args.image_prompts:
     print('Using image prompts:', args.image_prompts)

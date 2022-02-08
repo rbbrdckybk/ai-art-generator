@@ -74,6 +74,7 @@ parser.add_argument("-p",        type=str, help="Text prompts", default=None, de
 parser.add_argument("-i",        type=int, help="Number of steps", default=250, dest='max_iterations')
 parser.add_argument("-s",        nargs=2, type=int, help="Image size (width height) (default: %(default)s)", default=[768,448], dest='size')
 parser.add_argument("-ii",       type=str, help="Initial image", default=None, dest='init_image')
+parser.add_argument("-ss",       type=int, help="Skip steps", default=-1, dest='skip_steps')
 parser.add_argument("-cuts",     type=int, help="Number of cut batches", default=4, dest='cutn')
 parser.add_argument("-sd",       type=int, help="Seed", default=None, dest='seed')
 parser.add_argument("-o",        type=str, help="Output path/filename", default="output/output.png", dest='output')
@@ -516,13 +517,13 @@ def do_run():
                 txt, weight = parse_prompt(prompt)
                 txt = clip_model.encode_text(clip.tokenize(prompt).to(device)).float()
 
-            if args.fuzzy_prompt:
-                for i in range(25):
-                    model_stat["target_embeds"].append((txt + torch.randn(txt.shape).cuda() * args.rand_mag).clamp(0,1))
+                if args.fuzzy_prompt:
+                    for i in range(25):
+                        model_stat["target_embeds"].append((txt + torch.randn(txt.shape).cuda() * args.rand_mag).clamp(0,1))
+                        model_stat["weights"].append(weight)
+                else:
+                    model_stat["target_embeds"].append(txt)
                     model_stat["weights"].append(weight)
-            else:
-                model_stat["target_embeds"].append(txt)
-                model_stat["weights"].append(weight)
 
             if image_prompt:
               model_stat["make_cutouts"] = MakeCutouts(clip_model.visual.input_resolution, cutn, skip_augs=skip_augs)
@@ -1698,10 +1699,14 @@ init_scale = 1000 #@param{type: 'integer'}
 skip_steps = 0 #@param{type: 'integer'}
 if iargs.init_image:
     init_image = iargs.init_image
-    skips = round(steps * 0.50)
-    skip_steps = skips
-    steps += skips
-    print("Using init image: " + init_image + ", increasing steps to " + str(steps) + " and skipping first " + str(skips))
+    if iargs.skip_steps > -1 and iargs.skip_steps < steps:
+        skip_steps = iargs.skip_steps
+        print("Using init image: " + init_image + "; skipping first " + str(skip_steps) + " steps")
+    else:
+        skips = round(steps * 0.50)
+        skip_steps = skips
+        steps += skips
+        print("Using init image: " + init_image + ", increasing steps to " + str(steps) + " and skipping first " + str(skips))
 
 #Get corrected sizes
 side_x = (width_height[0]//64)*64;
@@ -1959,9 +1964,6 @@ if iargs.max_iterations and iargs.max_iterations >= 250:
 else:
     intermediate_saves = 0
 
-# comment this to enable intermediate saves, TODO add as prompt file option
-intermediate_saves = 0#@param{type: 'raw'}
-
 intermediates_in_subfolder = True #@param{type: 'boolean'}
 #@markdown Intermediate steps will save a copy at your specified intervals. You can either format it as a single integer or a list of specific steps
 
@@ -2033,15 +2035,26 @@ cut_ic_pow = 1#@param {type: 'number'}
 cut_icgray_p = "[0.2]*400+[0]*600"#@param {type: 'string'}
 
 text_prompts = {
-    0: ["A beautiful painting of a singular lighthouse, shining its light across a tumultuous sea of blood by greg rutkowski and thomas kinkade, Trending on artstation."],
+    #0: ["A beautiful painting of a singular lighthouse, shining its light across a tumultuous sea of blood by greg rutkowski and thomas kinkade, Trending on artstation."]
+    0: ["A beautiful painting of a singular lighthouse", "by greg rutkowski", "trending on artstation:-0.99"]
     # 100: ["This set of prompts start at frame 100", "This prompt has weight five:5"],
 }
 
 if iargs.prompts:
+    #input_prompts = iargs.prompts.split('|')
+    #for x in range(len(input_prompts)):
+    #    input_prompts[x] = input_prompts[x].strip()
+
     text_prompts = {
-        0: [iargs.prompts],
+        #0: input_prompts,
+        #0: [iargs.prompts],
+        0: iargs.prompts.split('|'),
         # 100: ["This set of prompts start at frame 100", "This prompt has weight five:5"],
     }
+
+    # not necessary but makes the cli output easier to parse
+    for x in range(len(text_prompts[0])):
+        text_prompts[0][x] = text_prompts[0][x].strip()
 
 image_prompts = {
     # 0:['ImagePromptsWorkButArentVeryGood.png:2',],

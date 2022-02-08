@@ -71,3 +71,5 @@ pencil sketch
 # if you list multiple, one will be chosen at random
 # *******************************************************************************
 [suffixes]
+
+| text:-0.99 | watermark:-0.99 | logo:-0.99

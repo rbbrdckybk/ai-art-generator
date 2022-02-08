@@ -25,6 +25,7 @@ HEIGHT = 512            # output image height, default is 512
 ITERATIONS = 500        # number of times to run, default is 500
 CUTS = 32               # default = 32
 INPUT_IMAGE = ""        # path and filename of starting image, eg: samples/vectors/face_07.png
+SKIP_STEPS = -1         # steps to skip when using init image (DIFFUSION ONLY)
 LEARNING_RATE = 0.1     # default = 0.1 (VQGAN ONLY)
 TRANSFORMER = ""        # needs to be a .yaml and .ckpt file in /checkpoints directory for whatever is specified here, default = vqgan_imagenet_f16_16384 (VQGAN ONLY)
 CLIP_MODEL = ""         # default = ViT-B/32 (VQGAN ONLY)
@@ -111,6 +112,7 @@ class Controller:
         self.learning_rate = LEARNING_RATE
         self.cuts = CUTS
         self.input_image = INPUT_IMAGE
+        self.skip_steps = SKIP_STEPS
         self.transformer = TRANSFORMER
         self.clip_model = CLIP_MODEL
         self.optimiser = OPTIMISER
@@ -218,7 +220,7 @@ class Controller:
                 input_name = input_name[len(input_name)-1]
                 input_name = input_name.split('\\')
                 input_name = input_name[len(input_name)-1]
-                outdir="output/" + str(date.today()) + '-' + input_name.split('.', 1)[0]
+                outdir="output/" + str(date.today()) + '-' + slugify(input_name.split('.', 1)[0])
 
                 for style in self.styles:
                     work = base + " | " + style.strip() + "\""
@@ -246,10 +248,16 @@ class Controller:
                     # common params
                     if self.input_image != "":
                         work += " -ii \"" + self.input_image + "\""
+                        if self.process == "diffusion" and int(self.skip_steps) > -1:
+                            work += " -ss " + self.skip_steps
 
                     #seed = random.randint(100000000000000,999999999999999)
                     seed = random.randint(1, 2**32) - 1
-                    work += " -sd " + str(seed) + " -o " + outdir + "/" + slugify(subject) + '-' + slugify(style) + ".png"
+                    name_subj = slugify(subject)
+                    name_subj = re.sub(":[-+]?\d*\.?\d+|[-+]?\d+", "", name_subj)
+                    name_style = slugify(style)
+                    name_style = re.sub(":[-+]?\d*\.?\d+|[-+]?\d+", "", name_style)
+                    work += " -sd " + str(seed) + " -o " + outdir + "/" + name_subj + '-' + name_style + ".png"
 
                     self.work_queue.append(work)
 
@@ -293,6 +301,11 @@ class Controller:
 
             elif command == 'input_image':
                 self.input_image = value
+
+            elif command == 'skip_steps':
+                if value == '':
+                    value = SKIP_STEPS
+                self.skip_steps = value
 
             elif command == 'transformer':
                 if value == 'vqgan_imagenet_f16_16384':
