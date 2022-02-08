@@ -257,6 +257,10 @@ class Controller:
                     name_subj = re.sub(":[-+]?\d*\.?\d+|[-+]?\d+", "", name_subj)
                     name_style = slugify(style)
                     name_style = re.sub(":[-+]?\d*\.?\d+|[-+]?\d+", "", name_style)
+                    if len(name_subj) > (180 - len(name_style)):
+                        x = 180 - len(name_style)
+                        name_subj = name_subj[0:x]
+
                     work += " -sd " + str(seed) + " -o " + outdir + "/" + name_subj + '-' + name_style + ".png"
 
                     self.work_queue.append(work)
@@ -421,7 +425,9 @@ def slugify(value, allow_unicode=False):
     else:
         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value.lower())
-    return re.sub(r'[-\s]+', '-', value).strip('-_')
+    value = re.sub(r'[-\s]+', '-', value).strip('-_')
+    # added in case of very long filenames due to multiple prompts
+    return value[0:180]
 
 # entry point
 if __name__ == '__main__':
