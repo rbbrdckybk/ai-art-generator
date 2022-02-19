@@ -1,3 +1,4 @@
+# VQGAN+CLIP AI image generator
 # adapted from from https://github.com/nerdyrodent/VQGAN-CLIP
 # Originally made by Katherine Crowson (https://github.com/crowsonkb, https://twitter.com/RiversHaveWings)
 # The original BigGAN+CLIP method was by https://twitter.com/advadnoun
@@ -5,7 +6,6 @@
 import argparse
 import math
 import random
-# from email.policy import default
 from urllib.request import urlopen
 from tqdm import tqdm
 import sys

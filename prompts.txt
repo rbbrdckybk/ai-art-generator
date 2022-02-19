@@ -1,30 +1,179 @@
-# Put your prompts here, one per line
-# Multi-part prompts are ok; use | to separate each piece
-# Use :# to indicate relative weights at the end of each prompt if desired, where # is a number (negatives ok)
-# Use ! followed by a supported setting name to change the value of it for all prompts that follow it (see readme and examples)
+# *******************************************************************************
+# subjects go here, one per line
+# subjects are required
+# *******************************************************************************
+[subjects]
 
-# some basic examples:
-a monkey on a motorcycle
-a swimming pool full of trash
+!PROCESS = diffusion
 
-# change settings, all prompts below this will now use these new values
-# make sure your specified input_image and transformer exist (see readme)
-!WIDTH = 128
-!HEIGHT = 128
-!ITERATIONS = 650
-!CUTS = 64
-!LEARNING_RATE = 0.085
-!INPUT_IMAGE = samples/vectors/face_01.png
-!TRANSFORMER = ffhq
+# VQGAN+CLIP face settings
+!WIDTH = 440
+!HEIGHT = 440
+!ITERATIONS = 500
+!CUTS = 24
+#!CLIP_MODEL = ViT B/16
+#!CLIP_MODEL = RN50
+#!CLIP_MODEL = RN50x4
+#!CLIP_MODEL = RN50x16
+#!CLIP_MODEL = RN101
+!CLIP_MODEL = RN50x4
+#!TRANSFORMER = ffhq
+!LEARNING_RATE = 0.0875
+!INPUT_IMAGE = samples/models/model_08.jpg
 
-# a multi-part example
-an eggplant | red and blue | a dark smokey background
+# CLIP-guided diffusion settings
+!WIDTH = 1280
+!HEIGHT = 768
+!ITERATIONS = 250
+!CUTS = 4
+!INPUT_IMAGE =
+!D_VITB32 = yes
+!D_VITB16 = yes
+!D_VITL14 = no
+!D_RN101 = no
+!D_RN50 = no
+!D_RN50x4 = yes
+!D_RN50x16 = no
+!D_RN50x64 = no
 
-# settings can be returned to their defaults by setting them to nothing
-!INPUT_IMAGE = 
-!TRANSFORMER = 
+a magical doorway to another dimension
+a surreal painting of Yoda on ketamine
+a realistic painting of an alien city skyline with a beautiful planet overhead in the sky
+a red barn in the woods during a snowy blizzard
+an ornate cathedral in a magical forest with a deep dark blue sky
+a vast underwater city at the bottom of the ocean, with small colorful fish and corals
 
-# a multi-part example where the dog portrait is very important, the background is somewhat important, and "blue" should be avoided
-a portrait of a dog:300 | a dark background:100 | blue:-100
+
+# *******************************************************************************
+# styles go here - think of these are directives in how to render the subject
+# these are optional
+# *******************************************************************************
+[styles]
+
+#by Albert Bierstadt
+by Aleksander Gierymski
+by Alfred Charles Parker
+by Anna and Elena Balbusso
+#by Anne Stokes
+#by Andre Francois
+by Anton Otto Fischer
+by Austin Briggs
+#by Bastien L. Deharme
+#by Bernard D’Andrea
+by Boris Vallejo
+by Bruce Pennington
+#by Carla Wyzgala
+#by Charles Dana Gibson
+#by Charles Marion Russell
+by Charles Vess
+#by Charlotte Harding
+by Chris Spollen
+by Coles Phillips
+#by Denise P. Garbis
+by Diego Gisbert Llorens
+by Domirinic Fegallia
+by Frank Frazetta
+by Franz Vohwinkel
+#by Georgia O'Keeffe
+by Gerald Brom
+by Greg Rutkowski
+by Gregory Manchess
+by Haddon Sundblom
+#by Hiro Isono
+by Igor Kieryluk
+by James Gurney
+by James McCarthy
+by James Paick
+by Jaime Jones
+by Jan Brett
+#by Jan van Eyck
+#by Jean Metzinger
+#by Jeff Miracola
+by Jennifer Janesko
+#by Jerry Pinkney
+by Jim Burns
+#by Jim Murray
+#by Jimmy Ernst
+by John Matson
+#by John Stephens
+by John Philip Falter
+by Joseph Clement Coll
+#by Joseph Keppler
+#by Josh Agle
+#by Jozef Mehoffer
+#by Julia Helen Jeffrey
+#by Keith Parkinson
+by Kelly Mckernan
+#by Larry Elmore   # start here
+by Lars Grant-West
+#by Lisa Parker
+#by Luigi Spano
+by Louis Glackens
+by Manuel Sanjulian
+by Magali Villeneuve
+by Margaret Brundage
+#by Margaret Keane
+by Mario Cooper
+by Mark English
+by Mark Poole
+by Mark Ryden
+by Mark Tedin
+by Mary Blair
+by Matt Stewart
+by Matthew D. Wilson
+by Max Ernst
+by M.C. Escher
+by Michael Parkes
+by Michael Whelan
+by Mondrian
+by Murray Tinkelman
+by Nathalie Rattner
+by Niko Henrichon
+by Noah Bradley
+by Peter Mohrbacher
+#by Nene Thomas
+#by Raffaello Ossola
+by Richard Doyle
+by Rick Griffin
+by Robert Fawcett
+by Rockwell Kent
+#by Roy Lichtenstein
+by Ryan Yee
+by Saul Steinberg
+#by Selina Fenec
+by Stevan Dohanos
+by Teresa Fasolino
+by Terese Nielsen
+# by Thomas Kinkade
+by Thomas McKnight
+by Tim and Greg Hildebrandt
+by Tim Burton
+# by Tim White
+by Todd Lockwood
+by Tomasz Jedruszek
+by Tony DiTerlizzi
+by Tony Sart
+# by Ukiyo-e
+by Victor Moscoso
+by Vincent Di Fate
+# by Vincent van Gogh
+by Vladimir Kush
+by Volkan Baga
+by Wayne England
+by Wesley Burt
+by William Glackens
+by Yasar Vurdem
 
 
+# *******************************************************************************
+# prefixes go in front of your subject
+# these are optional
+# *******************************************************************************
+[prefixes]
+
+
+# *******************************************************************************
+# suffixes will be appended after your subject
+# these are optional
+# *******************************************************************************
+[suffixes]
