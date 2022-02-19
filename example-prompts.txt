@@ -35,10 +35,12 @@ a monkey on a motorcycle
 !CUTS = 4
 !D_VITB32 = yes
 !D_VITB16 = yes
+!D_VITL14 = no
 !D_RN101 = no
 !D_RN50 = yes
 !D_RN50x4 = no
 !D_RN50x16 = no
+!D_RN50x64 = no
 !INPUT_IMAGE =
 
 # prompts here will use the CLIP-guided diffusion settings above
