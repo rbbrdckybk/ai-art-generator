@@ -26,6 +26,8 @@ from torchvision import transforms
 from torchvision.transforms import functional as TF
 from torch.cuda import get_device_properties
 torch.backends.cudnn.benchmark = False		# NR: True is a bit faster, but can lead to OOM. False is more deterministic.
+
+#os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 #torch.use_deterministic_algorithms(True)	# NR: grid_sampler_2d_backward_cuda does not have a deterministic implementation
 
 from torch_optimizer import DiffGrad, AdamP, RAdam
@@ -680,6 +682,8 @@ print('Using device:', device)
 print('Optimising using:', args.optimiser)
 
 if args.prompts:
+    for x in range(len(args.prompts)):
+        args.prompts[x] = args.prompts[x].strip()
     print('Using text prompts:', args.prompts)
 if args.image_prompts:
     print('Using image prompts:', args.image_prompts)

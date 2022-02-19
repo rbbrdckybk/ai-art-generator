@@ -1,0 +1,75 @@
+# *******************************************************************************
+# Example prompts.txt file
+# These settings should be a good starting point for a GPU with 8GB of VRAM
+# You can try these out by typing:
+# python make_art.py example-prompts.txt
+# *******************************************************************************
+
+# *******************************************************************************
+# subjects go here, one per line
+# subjects are required
+# setting directives are also allowed here and affect everything that follows them
+# *******************************************************************************
+[subjects]
+
+# VQGAN+CLIP settings
+!PROCESS = vqgan
+!WIDTH = 384
+!HEIGHT = 384
+!ITERATIONS = 500
+!LEARNING_RATE = 0.1
+!CUTS = 32
+!CLIP_MODEL = ViT-B/32
+!TRANSFORMER = 
+!INPUT_IMAGE =
+
+# prompts here will use the VQGAN+CLIP settings above
+a bright red apple
+a monkey on a motorcycle
+
+# CLIP-guided diffusion settings
+!PROCESS = diffusion
+!WIDTH = 768
+!HEIGHT = 448
+!ITERATIONS = 250
+!CUTS = 4
+!D_VITB32 = yes
+!D_VITB16 = yes
+!D_RN101 = no
+!D_RN50 = yes
+!D_RN50x4 = no
+!D_RN50x16 = no
+!INPUT_IMAGE =
+
+# prompts here will use the CLIP-guided diffusion settings above
+a shining lighthouse on the shore of a tropical island in a raging storm
+
+
+# *******************************************************************************
+# styles go here - think of these as directives in how to render the subject
+# every style listed here will be combined with every subject above to create an image
+# these are optional
+# *******************************************************************************
+[styles]
+
+watercolor
+by picasso
+pencil sketch
+
+
+# *******************************************************************************
+# prefixes will be placed in front of your subject
+# these are optional
+# if you list multiple, one will be chosen at random
+# *******************************************************************************
+[prefixes]
+
+
+# *******************************************************************************
+# suffixes will be appended after your subject
+# these are optional
+# if you list multiple, one will be chosen at random
+# *******************************************************************************
+[suffixes]
+
+| text:-0.99 | watermark:-0.99 | logo:-0.99
