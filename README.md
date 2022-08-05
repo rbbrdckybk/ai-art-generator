@@ -33,7 +33,7 @@ Note that you can customize your Pytorch installation by using [the online tool 
 **[3]** Install other required Python packages:
 ```
 conda install -c anaconda git urllib3
-pip install transformers keyboard pillow ftfy regex tqdm omegaconf pytorch-lightning IPython kornia imageio imageio-ffmpeg einops torch_optimizer
+pip install torchvision transformers keyboard pillow ftfy regex tqdm omegaconf pytorch-lightning IPython kornia imageio imageio-ffmpeg einops torch_optimizer
 ```
 
 **[4]** Clone this repository and switch to its directory:
