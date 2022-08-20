@@ -66,9 +66,6 @@ import warnings
 # Supress warnings
 warnings.filterwarnings('ignore')
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-print('Using device:', device)
-
 parser = argparse.ArgumentParser(description='AI image generation')
 parser.add_argument("-p",        type=str, help="Text prompts", default=None, dest='prompts')
 parser.add_argument("-i",        type=int, help="Number of steps", default=250, dest='max_iterations')
@@ -78,6 +75,7 @@ parser.add_argument("-ss",       type=int, help="Skip steps", default=-1, dest='
 parser.add_argument("-cuts",     type=int, help="Number of cut batches", default=4, dest='cutn')
 parser.add_argument("-sd",       type=int, help="Seed", default=None, dest='seed')
 parser.add_argument("-o",        type=str, help="Output path/filename", default="output/output.png", dest='output')
+parser.add_argument("-cd",       type=int, help="Cuda Device to use", default="0", dest='cuda_device')
 parser.add_argument("-dvitb32",  type=str, help="Use VitB32 CLIP model? yes/no", default="yes", dest='VitB32')
 parser.add_argument("-dvitb16",  type=str, help="Use VitB16 CLIP model? yes/no", default="yes", dest='VitB16')
 parser.add_argument("-dvitl14",  type=str, help="Use VitL14 CLIP model? yes/no", default="no", dest='VitL14')
@@ -88,6 +86,9 @@ parser.add_argument("-drn50x16", type=str, help="Use RN50x16 CLIP model? yes/no"
 parser.add_argument("-drn50x64", type=str, help="Use RN50x64 CLIP model? yes/no", default="no", dest='RN50x64')
 
 iargs = parser.parse_args()
+
+device = torch.device(f'cuda:{iargs.cuda_device}' if torch.cuda.is_available() else 'cpu')
+print('Using device:', device)
 
 root_path = 'content'
 model_256_downloaded = False

@@ -19,6 +19,7 @@ if sys.platform == "win32" or os.name == 'nt':
     import keyboard
 
 # these can be overriden with prompt file directives, no need to change them here
+CUDA_DEVICE = 0         # cuda device to use, default is 0
 PROCESS = "vqgan"       # which AI process to use, default is vqgan
 WIDTH = 512             # output image width, default is 512
 HEIGHT = 512            # output image height, default is 512
@@ -111,6 +112,7 @@ class Controller:
         self.width = WIDTH
         self.height = HEIGHT
         self.iterations = ITERATIONS
+        self.cuda_device = CUDA_DEVICE
         self.learning_rate = LEARNING_RATE
         self.cuts = CUTS
         self.input_image = INPUT_IMAGE
@@ -239,9 +241,12 @@ class Controller:
                             work += " -m " + self.clip_model
                         if self.optimiser != "":
                             work += " -opt " + self.optimiser
+                        if self.cuda_device != "":
+                            work += '-cd ' + str(self.cuda_device)
 
                     # CLIP-guided diffusion -specific params:
                     if self.process == "diffusion":
+                        work += " -cd " + str(self.cuda_device)
                         work += " -dvitb32 " + self.d_use_vitb32
                         work += " -dvitb16 " + self.d_use_vitb16
                         work += " -dvitl14 " + self.d_use_vitl14
@@ -283,6 +288,11 @@ class Controller:
                 if value == '':
                     value = PROCESS
                 self.process = value
+
+            elif command == 'cuda_device':
+                if value == '':
+                    value = CUDA_DEVICE
+                self.cuda_device = value
 
             elif command == 'width':
                 if value == '':
