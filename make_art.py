@@ -242,7 +242,7 @@ class Controller:
                         if self.optimiser != "":
                             work += " -opt " + self.optimiser
                         if self.cuda_device != "":
-                            work += '-cd ' + str(self.cuda_device)
+                            work += " -cd \"cuda:" + str(self.cuda_device) + "\""
 
                     # CLIP-guided diffusion -specific params:
                     if self.process == "diffusion":
