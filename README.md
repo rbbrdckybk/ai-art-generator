@@ -99,7 +99,7 @@ mkdir content\models\superres
 curl -L -o content/models/superres/project.yaml -C - "https://heibox.uni-heidelberg.de/f/31a76b13ea27482981b4/?dl=1"
 curl -L -o content/models/superres/last.ckpt -C - "https://heibox.uni-heidelberg.de/f/578df07c8fc04ffbadf3/?dl=1"
 ```
-Note that Linux users should again replace the double quotes in the curl commands with single quotes.
+Note that Linux users should again replace the double quotes in the curl commands with single quotes, and replace the **mkdir** backslashes with forward slashes.
 
 **[12]** (Optional) Test CLIP-guided diffusion:  
 ```
@@ -115,9 +115,10 @@ git clone https://github.com/CompVis/stable-diffusion
 **[14]** Download the Stable Diffusion pre-trained checkpoint file:
 ```
 mkdir stable-diffusion\models\ldm\stable-diffusion-v1
-**Expected public release on 8/22; will update intructions when that happens!**
+curl -L -o stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt -C - "https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt"
 ```
-The checkpoint file isn't publicly available yet, but if you manage to grab it before I update these instructions, you'll need to place it in this directory and name it **model.ckpt**. Stable Diffusion **should** work at that point, but no guarantees until I have to chance to test everything myself!
+**If the curl command doesn't download the checkpoint, it's gated behind a login.** You'll need to register [here](https://huggingface.co/CompVis) (only requires email and name) and then you can download the checkpoint file [here](https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt).  
+After downloading, you'll need to place the .ckpt file in the directory created above and name it **model.ckpt**.
 
 # Usage
 
