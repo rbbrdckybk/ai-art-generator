@@ -51,7 +51,7 @@ a shining lighthouse on the shore of a tropical island in a raging storm
 !WIDTH = 384
 !HEIGHT = 384
 !STEPS = 50
-!CHANNELS = 4
+!SCALE = 7.5
 !BATCH_SIZE = 1
 
 # prompts here will use the stable diffusion settings above
