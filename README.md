@@ -112,7 +112,12 @@ You should see output.png created in the output directory, which should loosely 
 git clone https://github.com/CompVis/stable-diffusion
 ```
 
-**[14]** Download the Stable Diffusion pre-trained checkpoint file:
+**[14]** Install additional dependancies required by Stable Diffusion:
+```
+pip install diffusers invisible-watermark 
+```
+
+**[15]** Download the Stable Diffusion pre-trained checkpoint file:
 ```
 mkdir stable-diffusion\models\ldm\stable-diffusion-v1
 curl -L -o stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt -C - "https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt"
