@@ -211,7 +211,7 @@ Sets the guidance scale when using Stable Diffusion to 7.5 (the default). Higher
 ```
 !BATCH_SIZE = 1
 ```
-Sets the batch size when using Stable Diffusion to 1 (the default). Values over 1 will cause multiple output images to be created for each prompt. Useful if you want multiple images of the same prompt (different seed values will still be used for each).
+Sets the batch size when using Stable Diffusion to 1 (the default). Values over 1 will cause multiple output images to be created for each prompt at a slight time savings per image. There is a large cost in GPU VRAM required for incrementing this - I'm not able to get over 2 with otherwise default settings on 12GB VRAM, and 5 appears to be the max on 24GB.
 ```
 !STRENGTH = 0.75
 ```
