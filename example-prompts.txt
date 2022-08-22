@@ -55,7 +55,7 @@ a shining lighthouse on the shore of a tropical island in a raging storm
 !BATCH_SIZE = 1
 
 # prompts here will use the stable diffusion settings above
-a portrait of a proud corgi astronaut
+a proud corgi astronaut
 Obama as an avocado
 
 # *******************************************************************************
@@ -73,14 +73,18 @@ pencil sketch
 # *******************************************************************************
 # prefixes will be placed in front of your subject
 # these are optional
-# if you list multiple, one will be chosen at random
+# if you list multiple lines, one will be chosen at random
+#   e.g. if you're making faces, you might put something like:
+#   a beautiful portrait of
 # *******************************************************************************
 [prefixes]
 
 
 # *******************************************************************************
-# suffixes will be appended after your subject
+# suffixes will be appended after your subject or style depending on process used
 # these are optional
-# if you list multiple, one will be chosen at random
+# if you list multiple lines, one will be chosen at random
+#   e.g. if you have a bunch of keywords relevant to all of your subjects, like:
+#   trending on artstation, unreal engine, 4k, masterpiece, vivid colors
 # *******************************************************************************
 [suffixes]
