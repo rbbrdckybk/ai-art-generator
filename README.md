@@ -102,6 +102,17 @@ python diffusion.py -s 128 128 -i 200 -p "a red apple" -o output.png
 ```
 You should see output.png created in the output directory, which should loosely resemble an apple.
 
+**[13]** Clone Stable Diffusion repository (if you're not interested in SD, you can skip everything from here to the end):
+```
+git clone https://github.com/CompVis/stable-diffusion
+```
+
+**[14]** Download the Stable Diffusion pre-trained checkpoint file:
+```
+mkdir stable-diffusion\models\ldm\stable-diffusion-v1
+**Expected public release on 8/22; will update intructions when that happens!**
+```
+
 # Usage
 
 Essentially, you just need to create a text file containing the subjects and styles you want to use to generate images. If you have 5 subjects and 20 styles in your prompt file, then a total of 100 output images will be created (20 style images for each subject).
@@ -130,20 +141,23 @@ For **[setting to change]**, valid directives are:
  * PROCESS
  * WIDTH
  * HEIGHT
- * ITERATIONS
- * CUTS
- * INPUT_IMAGE
+ * ITERATIONS (vqgan/diffusion only)
+ * CUTS (vqgan/diffusion only)
+ * INPUT_IMAGE (vqgan/diffusion only)
  * LEARNING_RATE (vqgan only)
  * TRANSFORMER (vqgan only)
  * OPTIMISER (vqgan only)
  * CLIP_MODEL (vqgan only)
  * D_VITB16, D_VITB32, D_RN101, D_RN50, D_RN50x4, D_RN50x16 (diffusion only)
+ * STEPS (stablediff only)
+ * CHANNELS (stablediff only)
+ * BATCH_SIZE (stablediff only)
 
 Some examples: 
 ```
 !PROCESS = vqgan
 ```
-This will set the current AI image-generation process. Valid options are **vqgan** or **diffusion**.
+This will set the current AI image-generation process. Valid options are **vqgan**, **diffusion**, or **stablediff**.
 ```
 !WIDTH = 384
 !HEIGHT = 384
@@ -163,5 +177,18 @@ This will use samples/face-input.jpg (or whatever image you specify) as the star
 !INPUT_IMAGE = 
 ```
 Setting any of these values to nothing will return it to its default. So in this example, no starting image will be used.
+```
+!STEPS = 50
+```
+Sets the number of steps (simliar to iterations) when using Stable Diffusion to 50 (the default). Higher values take more time and may improve image quality. Values over 100 are rarely necessary.
+```
+!CHANNELS = 4
+```
+Sets the number of latent channels when using Stable Diffusion to 4 (the default). Higher values will cause the the output to more closely adhere to your prompt.
+```
+!BATCH_SIZE = 1
+```
+Sets the batch size when using Stable Diffusion to 1 (the default). Values over 1 will cause multiple output images to be created for each prompt. Useful if you want multiple images of the same prompt (different seed values will still be used for each).
+
 
 TODO: finish settings examples & add usage tips/examples
