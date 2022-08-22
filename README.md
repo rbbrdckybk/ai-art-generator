@@ -9,7 +9,7 @@ Some example images that I've created via this process (these are cherry-picked 
 <img src="/samples/sample06.jpg" width="366" alt="sample image created with CLIP-guided diffusion process" title="sample image created with CLIP-guided diffusion process">  
 Note that I did not create or train the models used in this project, nor was I involved in the original coding. I've simply modified the original colab versions so they'll run locally and added some support for automation.
 Models currently supported, with links to their original implementations:
- * [Stable Diffusion](https://github.com/CompVis/stable-diffusion) (as soon as the model is publically available on or around 8/22!)
+ * [Stable Diffusion](https://github.com/CompVis/stable-diffusion)
  * CLIP-guided Diffusion (via [Disco Diffusion](https://colab.research.google.com/github/alembics/disco-diffusion/blob/main/Disco_Diffusion.ipynb) adapted to run locally)
  * [VQGAN+CLIP](https://colab.research.google.com/github/justinjohn0306/VQGAN-CLIP/blob/main/VQGAN%2BCLIP(Updated).ipynb)
 
