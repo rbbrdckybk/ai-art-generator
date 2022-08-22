@@ -193,9 +193,9 @@ Setting any of these values to nothing will return it to its default. So in this
 ```
 Sets the number of steps (simliar to iterations) when using Stable Diffusion to 50 (the default). Higher values take more time and may improve image quality. Values over 100 are rarely necessary.
 ```
-!CHANNELS = 4
+!SCALE = 7.5
 ```
-Sets the number of latent channels when using Stable Diffusion to 4 (the default). Higher values will cause the the output to more closely adhere to your prompt.
+Sets the guidance scale when using Stable Diffusion to 7.5 (the default). Higher values (to a point, beyond ~25 results may be strange) will cause the the output to more closely adhere to your prompt.
 ```
 !BATCH_SIZE = 1
 ```
