@@ -112,6 +112,7 @@ git clone https://github.com/CompVis/stable-diffusion
 mkdir stable-diffusion\models\ldm\stable-diffusion-v1
 **Expected public release on 8/22; will update intructions when that happens!**
 ```
+The checkpoint file isn't publicly available yet, but if you manage to grab it before I update these instructions, you'll need to place it in this directory and name it **model.ckpt**. Stable Diffusion **should** work at that point, but no guarantees until I have to chance to test everything myself!
 
 # Usage
 
