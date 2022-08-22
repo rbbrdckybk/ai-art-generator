@@ -191,7 +191,7 @@ Setting any of these values to nothing will return it to its default. So in this
 ```
 !STEPS = 50
 ```
-Sets the number of steps (simliar to iterations) when using Stable Diffusion to 50 (the default). Higher values take more time and may improve image quality. Values over 100 are rarely necessary.
+Sets the number of steps (simliar to iterations) when using Stable Diffusion to 50 (the default). Higher values take more time and may improve image quality. Values over 100 rarely produce noticeable differences compared to lower values.
 ```
 !SCALE = 7.5
 ```
