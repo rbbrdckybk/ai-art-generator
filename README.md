@@ -150,7 +150,7 @@ For **[setting to change]**, valid directives are:
  * HEIGHT
  * ITERATIONS (vqgan/diffusion only)
  * CUTS (vqgan/diffusion only)
- * INPUT_IMAGE (vqgan/diffusion only)
+ * INPUT_IMAGE
  * LEARNING_RATE (vqgan only)
  * TRANSFORMER (vqgan only)
  * OPTIMISER (vqgan only)
@@ -173,7 +173,7 @@ This will force GPU 0 be to used (the default). Useful if you have multiple GPUs
 !WIDTH = 384
 !HEIGHT = 384
 ```
-This will set the output image size to 384x384. A larger output size requires more GPU VRAM.
+This will set the output image size to 384x384. A larger output size requires more GPU VRAM. Note that for stablediff these values should be multiples of 64.
 ```
 !TRANSFORMER = ffhq
 ```
@@ -183,7 +183,7 @@ Whatever you specify here MUST exist in the checkpoints directory as a .ckpt and
 ```
 !INPUT_IMAGE = samples/face-input.jpg
 ```
-This will use samples/face-input.jpg (or whatever image you specify) as the starting image, instead of the default random white noise. Input images must be the same aspect ratio as your output images for good results.
+This will use samples/face-input.jpg (or whatever image you specify) as the starting image, instead of the default random noise. Input images must be the same aspect ratio as your output images for good results. Note that when using stablediff the output image size will be the same as your input image (your height/width settings will be ignored).
 ```
 !INPUT_IMAGE = 
 ```
