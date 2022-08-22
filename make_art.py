@@ -15,6 +15,10 @@ from collections import deque
 from PIL.PngImagePlugin import PngImageFile, PngInfo
 from torch.cuda import get_device_name
 
+# for stable diffusion
+cwd = os.getcwd()
+os.environ['PYTHONPATH'] = os.pathsep + (cwd + '\latent-diffusion')
+
 if sys.platform == "win32" or os.name == 'nt':
     import keyboard
 
@@ -23,9 +27,9 @@ CUDA_DEVICE = 0         # cuda device to use, default is 0
 PROCESS = "vqgan"       # which AI process to use, default is vqgan
 WIDTH = 512             # output image width, default is 512
 HEIGHT = 512            # output image height, default is 512
-ITERATIONS = 500        # number of times to run, default is 500
-CUTS = 32               # default = 32
-INPUT_IMAGE = ""        # path and filename of starting image, eg: samples/vectors/face_07.png
+ITERATIONS = 500        # number of times to run, default is 500 (VQGAN/DIFFUSION ONLY)
+CUTS = 32               # default = 32 (VQGAN/DIFFUSION ONLY)
+INPUT_IMAGE = ""        # path and filename of starting image, eg: samples/vectors/face_07.png (VQGAN/DIFFUSION ONLY)
 SKIP_STEPS = -1         # steps to skip when using init image (DIFFUSION ONLY)
 LEARNING_RATE = 0.1     # default = 0.1 (VQGAN ONLY)
 TRANSFORMER = ""        # needs to be a .yaml and .ckpt file in /checkpoints directory for whatever is specified here, default = vqgan_imagenet_f16_16384 (VQGAN ONLY)
@@ -39,6 +43,9 @@ D_USE_RN50 = "yes"      # load RN50 CLIP model? (DIFFUSION ONLY)
 D_USE_RN50x4 = "no"     # load RN50x4 CLIP model? (DIFFUSION ONLY)
 D_USE_RN50x16 = "no"    # load RN50x16 CLIP model? (DIFFUSION ONLY)
 D_USE_RN50x64 = "no"    # load RN50x64 CLIP model? (DIFFUSION ONLY)
+STEPS = 50              # number of steps (STABLE DIFFUSION ONLY)
+CHANNELS = 4            # number of latent channels (STABLE DIFFUSION ONLY)
+BATCH_SIZE = 1          # number of images to generate per prompt (STABLE DIFFUSION ONLY)
 
 # Prevent threads from printing at same time.
 print_lock = threading.Lock()
@@ -53,26 +60,37 @@ class Worker(threading.Thread):
         self.callback = callback
 
     def run(self):
+        sd = False
         # create output folder if it doesn't exist
-        fullfilepath = self.command.split(" -o ",1)[1]
-        filepath = fullfilepath.replace(fullfilepath[fullfilepath.rindex('/'):], "")
-        Path(filepath).mkdir(parents=True, exist_ok=True)
+        if " -o " in self.command:
+            # this is vqgan/diffusion
+            fullfilepath = self.command.split(" -o ",1)[1]
+            filepath = fullfilepath.replace(fullfilepath[fullfilepath.rindex('/'):], "")
+            Path(filepath).mkdir(parents=True, exist_ok=True)
 
-        # check to see if output file already exists; find unique name if it does
-        x = 1
-        basefilepath = fullfilepath
-        while exists(fullfilepath.replace('.png', '.jpg')):
-            x += 1
-            fullfilepath = basefilepath.replace(".png","") + '-' + str(x) + ".png"
+            # check to see if output file already exists; find unique name if it does
+            x = 1
+            basefilepath = fullfilepath
+            while exists(fullfilepath.replace('.png', '.jpg')):
+                x += 1
+                fullfilepath = basefilepath.replace(".png","") + '-' + str(x) + ".png"
 
-        self.command = self.command.split(" -o ",1)[0] + " -o " + fullfilepath
+            self.command = self.command.split(" -o ",1)[0] + " -o " + fullfilepath
+        else:
+            # this is stable diffusion
+            sd = True
+            fullfilepath = self.command.split(" --outdir ",1)[0]
+            print (fullfilepath)
 
         with print_lock:
             print("Command: " + self.command)
 
         start_time = time.time()
         # invoke specified AI art process
-        subprocess.call(shlex.split(self.command))
+        if not sd:
+            subprocess.call(shlex.split(self.command))
+        else:
+            subprocess.call(shlex.split(self.command), cwd=(cwd + '\stable-diffusion'))
         exec_time = time.time() - start_time
 
         # save generation details as exif metadata
@@ -128,6 +146,9 @@ class Controller:
         self.d_use_rn50x4 = D_USE_RN50x4
         self.d_use_rn50x16 = D_USE_RN50x16
         self.d_use_rn50x64 = D_USE_RN50x64
+        self.steps = STEPS
+        self.channels = CHANNELS
+        self.batch_size = BATCH_SIZE
 
         self.work_queue = deque()
         self.work_done = False
@@ -215,11 +236,23 @@ class Controller:
 
             # otherwise build the command
             else:
-                base = "python " + self.process + ".py" \
-                    + " -s " + str(self.width) + " " + str(self.height) \
-                    + " -i " + str(self.iterations) \
-                    + " -cuts " + str(self.cuts) \
-                    + " -p \""
+                base = ""
+
+                if self.process == "stablediff":
+                    base = "python scripts/txt2img.py" \
+                        + " --W " + str(self.width) \
+                        + " --H " + str(self.height) \
+                        + " --ddim_steps " + str(self.steps) \
+                        + " --prompt \""
+
+                else:
+                    # vqgan & diffusion shared initial setup
+                    base = "python " + self.process + ".py" \
+                        + " -s " + str(self.width) + " " + str(self.height) \
+                        + " -i " + str(self.iterations) \
+                        + " -cuts " + str(self.cuts) \
+                        + " -p \""
+
                 base += (self.prefix() + ' ' + subject + ' ' + self.suffix()).strip()
 
                 input_name = self.prompt_file_name.split('/')
@@ -228,8 +261,12 @@ class Controller:
                 input_name = input_name[len(input_name)-1]
                 outdir="output/" + str(date.today()) + '-' + slugify(input_name.split('.', 1)[0])
 
+                # queue a work item for each style/artist
                 for style in self.styles:
-                    work = base + " | " + style.strip() + "\""
+                    if self.process == "stablediff":
+                        work = base + ", " + style.strip() + "\""
+                    else:
+                        work = base + " | " + style.strip() + "\""
 
                     # VQGAN+CLIP -specific params
                     if self.process == "vqgan":
@@ -256,24 +293,39 @@ class Controller:
                         work += " -drn50x16 " + self.d_use_rn50x16
                         work += " -drn50x64 " + self.d_use_rn50x64
 
-                    # common params
-                    if self.input_image != "":
-                        work += " -ii \"" + self.input_image + "\""
-                        if self.process == "diffusion" and int(self.skip_steps) > -1:
-                            work += " -ss " + self.skip_steps
-
-                    #seed = random.randint(100000000000000,999999999999999)
                     seed = random.randint(1, 2**32) - 1
-                    name_subj = slugify(subject)
-                    name_subj = re.sub(":[-+]?\d*\.?\d+|[-+]?\d+", "", name_subj)
-                    name_style = slugify(style)
-                    name_style = re.sub(":[-+]?\d*\.?\d+|[-+]?\d+", "", name_style)
-                    if len(name_subj) > (180 - len(name_style)):
-                        x = 180 - len(name_style)
-                        name_subj = name_subj[0:x]
 
-                    work += " -sd " + str(seed) + " -o " + outdir + "/" + name_subj + '-' + name_style + ".png"
+                    # Stable Diffusion -specific params:
+                    if self.process == "stablediff":
+                        work += " --C " + str(self.channels)
+                        work += " --n_samples " + str(self.batch_size)
+                        # note/todo: to add support for cuda device, txt2img.py in stable-diffusion/scripts needs to be modified
+                        # leaving it out for now as the change will be overwritten every time there is a new SD release unless
+                        # it's incorporated into their repo
 
+                    if self.process == "stablediff":
+                        # Stable Diffusion -specific closing args:
+                        work += " --seed " + str(seed) + " --skip_grid" + " --outdir " + outdir
+                        # note that SD doesn't allow specifying output filename
+
+                    else:
+                        # vqgan and diffusion -shared closing args:
+                        if self.input_image != "":
+                            work += " -ii \"" + self.input_image + "\""
+                            if self.process == "diffusion" and int(self.skip_steps) > -1:
+                                work += " -ss " + self.skip_steps
+
+                        name_subj = slugify(subject)
+                        name_subj = re.sub(":[-+]?\d*\.?\d+|[-+]?\d+", "", name_subj)
+                        name_style = slugify(style)
+                        name_style = re.sub(":[-+]?\d*\.?\d+|[-+]?\d+", "", name_style)
+                        if len(name_subj) > (180 - len(name_style)):
+                            x = 180 - len(name_style)
+                            name_subj = name_subj[0:x]
+
+                        work += " -sd " + str(seed) + " -o " + outdir + "/" + name_subj + '-' + name_style + ".png"
+
+                    # work args built, add to queue
                     self.work_queue.append(work)
 
     # handle whatever settings directives that are allowed in the prompt file here
@@ -361,6 +413,21 @@ class Controller:
 
             elif command == 'd_rn50x64':
                 self.d_use_rn50x64 = value
+
+            elif command == 'steps':
+                if value == '':
+                    value = STEPS
+                self.steps = value
+
+            elif command == 'channels':
+                if value == '':
+                    value = CHANNELS
+                self.channels = value
+
+            elif command == 'batch_size':
+                if value == '':
+                    value = BATCH_SIZE
+                self.batch_size = value
 
             else:
                 print("\n*** WARNING: prompt file command not recognized: " + command.upper() + " (it will be ignored!) ***\n")
