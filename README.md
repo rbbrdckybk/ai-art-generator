@@ -159,6 +159,7 @@ For **[setting to change]**, valid directives are:
  * STEPS (stablediff only)
  * CHANNELS (stablediff only)
  * BATCH_SIZE (stablediff only)
+ * STRENGTH (stablediff only)
 
 Some examples: 
 ```
@@ -200,6 +201,10 @@ Sets the guidance scale when using Stable Diffusion to 7.5 (the default). Higher
 !BATCH_SIZE = 1
 ```
 Sets the batch size when using Stable Diffusion to 1 (the default). Values over 1 will cause multiple output images to be created for each prompt. Useful if you want multiple images of the same prompt (different seed values will still be used for each).
+```
+!STRENGTH = 0.75
+```
+Sets the influence of the starting image to 0.75 (the default). Only relevant when using Stable Diffusion with an input image. Valid values are between 0-1, with 0 corresponding to complete destruction of the input image, and 1 corresponding to leaving the starting image completely intact. Values between 0.25 and 0.75 tend to give interesting results.
 
 
 TODO: finish settings examples & add usage tips/examples
