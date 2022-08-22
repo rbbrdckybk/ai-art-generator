@@ -164,16 +164,16 @@ Some examples:
 ```
 !PROCESS = vqgan
 ```
-This will set the current AI image-generation process. Valid options are **vqgan**, **diffusion**, or **stablediff**.
+This will set the current AI image-generation process. Valid options are **vqgan** for VQGAN+CLIP, **diffusion** for CLIP-guided diffusion (Disco Diffusion), or **stablediff** for Stable Diffusion.
 ```
 !CUDA_DEVICE = 0
 ```
-This will force GPU 0 be to used (the default). Useful if you have multiple GPUs - you can run multiple instances, each with it's own prompt file specifying a unique GPU ID.
+This will force GPU 0 be to used (the default). Useful if you have multiple GPUs - you can run multiple instances, each with it's own prompt file specifying a unique GPU ID. Note that this is not currently supported for Stable Diffusion.
 ```
 !WIDTH = 384
 !HEIGHT = 384
 ```
-This will set the output image size to 384x384. A larger output size requires more GPU VRAM. Note that for stablediff these values should be multiples of 64.
+This will set the output image size to 384x384. A larger output size requires more GPU VRAM. Note that for Stable Diffusion these values should be multiples of 64.
 ```
 !TRANSFORMER = ffhq
 ```
@@ -183,7 +183,7 @@ Whatever you specify here MUST exist in the checkpoints directory as a .ckpt and
 ```
 !INPUT_IMAGE = samples/face-input.jpg
 ```
-This will use samples/face-input.jpg (or whatever image you specify) as the starting image, instead of the default random noise. Input images must be the same aspect ratio as your output images for good results. Note that when using stablediff the output image size will be the same as your input image (your height/width settings will be ignored).
+This will use samples/face-input.jpg (or whatever image you specify) as the starting image, instead of the default random noise. Input images must be the same aspect ratio as your output images for good results. Note that when using with Stable Diffusion the output image size will be the same as your input image (your height/width settings will be ignored).
 ```
 !INPUT_IMAGE = 
 ```
