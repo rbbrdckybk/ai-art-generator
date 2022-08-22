@@ -29,7 +29,7 @@ WIDTH = 512             # output image width, default is 512
 HEIGHT = 512            # output image height, default is 512
 ITERATIONS = 500        # number of times to run, default is 500 (VQGAN/DIFFUSION ONLY)
 CUTS = 32               # default = 32 (VQGAN/DIFFUSION ONLY)
-INPUT_IMAGE = ""        # path and filename of starting image, eg: samples/vectors/face_07.png (VQGAN/DIFFUSION ONLY)
+INPUT_IMAGE = ""        # path and filename of starting/input image, eg: samples/vectors/face_07.png
 SKIP_STEPS = -1         # steps to skip when using init image (DIFFUSION ONLY)
 LEARNING_RATE = 0.1     # default = 0.1 (VQGAN ONLY)
 TRANSFORMER = ""        # needs to be a .yaml and .ckpt file in /checkpoints directory for whatever is specified here, default = vqgan_imagenet_f16_16384 (VQGAN ONLY)
@@ -44,8 +44,9 @@ D_USE_RN50x4 = "no"     # load RN50x4 CLIP model? (DIFFUSION ONLY)
 D_USE_RN50x16 = "no"    # load RN50x16 CLIP model? (DIFFUSION ONLY)
 D_USE_RN50x64 = "no"    # load RN50x64 CLIP model? (DIFFUSION ONLY)
 STEPS = 50              # number of steps (STABLE DIFFUSION ONLY)
-CHANNELS = 4            # number of latent channels (STABLE DIFFUSION ONLY)
+SCALE = 7.5             # guidance scale (STABLE DIFFUSION ONLY)
 BATCH_SIZE = 1          # number of images to generate per prompt (STABLE DIFFUSION ONLY)
+STRENGTH = 0.75         # strength of starting image influence (STABLE DIFFUSION ONLY)
 
 # Prevent threads from printing at same time.
 print_lock = threading.Lock()
@@ -147,8 +148,9 @@ class Controller:
         self.d_use_rn50x16 = D_USE_RN50x16
         self.d_use_rn50x64 = D_USE_RN50x64
         self.steps = STEPS
-        self.channels = CHANNELS
+        self.scale = SCALE
         self.batch_size = BATCH_SIZE
+        self.strength = STRENGTH
 
         self.work_queue = deque()
         self.work_done = False
@@ -239,11 +241,16 @@ class Controller:
                 base = ""
 
                 if self.process == "stablediff":
-                    base = "python scripts/txt2img.py" \
-                        + " --W " + str(self.width) \
-                        + " --H " + str(self.height) \
-                        + " --ddim_steps " + str(self.steps) \
-                        + " --prompt \""
+                    if self.input_image != "":
+                        base = "python scripts/img2img.py" \
+                            + " --ddim_steps " + str(self.steps) \
+                            + " --prompt \""
+                    else:
+                        base = "python scripts/txt2img.py" \
+                            + " --W " + str(self.width) \
+                            + " --H " + str(self.height) \
+                            + " --ddim_steps " + str(self.steps) \
+                            + " --prompt \""
 
                 else:
                     # vqgan & diffusion shared initial setup
@@ -297,7 +304,7 @@ class Controller:
 
                     # Stable Diffusion -specific params:
                     if self.process == "stablediff":
-                        work += " --C " + str(self.channels)
+                        work += " --scale " + str(self.scale)
                         work += " --n_samples " + str(self.batch_size)
                         # note/todo: to add support for cuda device, txt2img.py in stable-diffusion/scripts needs to be modified
                         # leaving it out for now as the change will be overwritten every time there is a new SD release unless
@@ -305,6 +312,8 @@ class Controller:
 
                     if self.process == "stablediff":
                         # Stable Diffusion -specific closing args:
+                        if self.input_image != "":
+                            work += " --init-img \"" + self.input_image + "\"" + " --strength " + str(self.strength)
                         work += " --seed " + str(seed) + " --skip_grid" + " --outdir " + outdir
                         # note that SD doesn't allow specifying output filename
 
@@ -419,15 +428,20 @@ class Controller:
                     value = STEPS
                 self.steps = value
 
-            elif command == 'channels':
+            elif command == 'scale':
                 if value == '':
-                    value = CHANNELS
-                self.channels = value
+                    value = SCALE
+                self.scale = value
 
             elif command == 'batch_size':
                 if value == '':
                     value = BATCH_SIZE
                 self.batch_size = value
+
+            elif command == 'strength':
+                if value == '':
+                    value = STRENGTH
+                self.strength = value
 
             else:
                 print("\n*** WARNING: prompt file command not recognized: " + command.upper() + " (it will be ignored!) ***\n")
