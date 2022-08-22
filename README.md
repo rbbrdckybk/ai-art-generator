@@ -123,7 +123,12 @@ mkdir stable-diffusion\models\ldm\stable-diffusion-v1
 curl -L -o stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt -C - "https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt"
 ```
 **If the curl command doesn't download the checkpoint, it's gated behind a login.** You'll need to register [here](https://huggingface.co/CompVis) (only requires email and name) and then you can download the checkpoint file [here](https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt).  
-After downloading, you'll need to place the .ckpt file in the directory created above and name it **model.ckpt**.
+After downloading, you'll need to place the .ckpt file in the directory created above and name it **model.ckpt**.  
+  
+If you're getting errors while running and haven't updated your installation in awhile, try updating some of the more important packages, for example:
+```
+pip install transformers -U
+```
 
 # Usage
 
