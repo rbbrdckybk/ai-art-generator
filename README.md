@@ -140,6 +140,7 @@ Directives can be included in your prompt file to modify settings for all prompt
 
 For **[setting to change]**, valid directives are:  
  * PROCESS
+ * CUDA_DEVICE (vqgan/diffusion only)
  * WIDTH
  * HEIGHT
  * ITERATIONS (vqgan/diffusion only)
@@ -159,6 +160,10 @@ Some examples:
 !PROCESS = vqgan
 ```
 This will set the current AI image-generation process. Valid options are **vqgan**, **diffusion**, or **stablediff**.
+```
+!CUDA_DEVICE = 0
+```
+This will force GPU 0 be to used (the default). Useful if you have multiple GPUs - you can run multiple instances, each with it's own prompt file specifying a unique GPU ID.
 ```
 !WIDTH = 384
 !HEIGHT = 384
