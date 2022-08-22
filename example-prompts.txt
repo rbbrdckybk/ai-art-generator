@@ -46,6 +46,17 @@ a monkey on a motorcycle
 # prompts here will use the CLIP-guided diffusion settings above
 a shining lighthouse on the shore of a tropical island in a raging storm
 
+# stable diffusion settings
+!PROCESS = stablediff
+!WIDTH = 384
+!HEIGHT = 384
+!STEPS = 50
+CHANNELS = 4
+BATCH_SIZE = 1
+
+# prompts here will use the stable diffusion settings above
+a portrait of a proud corgi astronaut
+Obama as an avocado
 
 # *******************************************************************************
 # styles go here - think of these as directives in how to render the subject
@@ -73,5 +84,3 @@ pencil sketch
 # if you list multiple, one will be chosen at random
 # *******************************************************************************
 [suffixes]
-
-| text:-0.99 | watermark:-0.99 | logo:-0.99
