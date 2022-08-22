@@ -9,6 +9,7 @@ import re
 import random
 import os
 from os.path import exists
+from datetime import datetime as dt
 from datetime import date
 from pathlib import Path
 from collections import deque
@@ -17,10 +18,12 @@ from torch.cuda import get_device_name
 
 # for stable diffusion
 cwd = os.getcwd()
-os.environ['PYTHONPATH'] = os.pathsep + (cwd + '\latent-diffusion')
 
 if sys.platform == "win32" or os.name == 'nt':
     import keyboard
+    os.environ['PYTHONPATH'] = os.pathsep + (cwd + "\latent-diffusion") + os.pathsep + (cwd + "\\taming-transformers") + os.pathsep + (cwd + "\CLIP")
+else:
+    os.environ['PYTHONPATH'] = os.pathsep + (cwd + "/latent-diffusion") + os.pathsep + (cwd + "/taming-transformers") + os.pathsep + (cwd + "/CLIP")
 
 # these can be overriden with prompt file directives, no need to change them here
 CUDA_DEVICE = 0         # cuda device to use, default is 0
@@ -80,8 +83,10 @@ class Worker(threading.Thread):
         else:
             # this is stable diffusion
             sd = True
-            fullfilepath = self.command.split(" --outdir ",1)[0]
-            print (fullfilepath)
+            # fullfilepath in the case of SD will simply be the output path since
+            # SD doesn't support specifying input files
+            fullfilepath = self.command.split(" --outdir ",1)[1]
+            fullfilepath = fullfilepath.replace("../","")
 
         with print_lock:
             print("Command: " + self.command)
@@ -91,11 +96,42 @@ class Worker(threading.Thread):
         if not sd:
             subprocess.call(shlex.split(self.command))
         else:
-            subprocess.call(shlex.split(self.command), cwd=(cwd + '\stable-diffusion'))
-        exec_time = time.time() - start_time
+            if sys.platform == "win32" or os.name == 'nt':
+                subprocess.call(shlex.split(self.command), cwd=(cwd + '\stable-diffusion'))
+            else:
+                subprocess.call(shlex.split(self.command), cwd=(cwd + '/stable-diffusion'))
 
-        # save generation details as exif metadata
+            # find the new image(s) that SD created: re-name, process, and move them
+            new_files = os.listdir(fullfilepath + "/samples")
+            nf_count = 0
+            exec_time = time.time() - start_time
+            for f in new_files:
+                if (".png" in f):
+                    # todo: this is mostly a lazy copy from below and should be made into a function
+                    pngImage = PngImageFile(fullfilepath + "/samples/" + f)
+                    im = pngImage.convert('RGB')
+                    exif = im.getexif()
+                    exif[0x9286] = self.command
+                    exif[0x9c9c] = self.command.encode('utf16')
+                    exif[0x9c9d] = gpu_name.encode('utf16')
+                    exif[0x0131] = "AI Art (generated in " + str(datetime.timedelta(seconds=round(exec_time))) + ")"
+                    newfilename = dt.now().strftime('%Y%m-%d%H-%M%S-') + str(nf_count)
+                    nf_count += 1
+                    im.save(fullfilepath + "/" + newfilename + ".jpg", exif=exif, quality=88)
+                    if exists(fullfilepath + "/samples/" + f):
+                        os.remove(fullfilepath + "/samples/" + f)
+                    try:
+                        os.rmdir(fullfilepath + "/samples")
+                    except OSError as e:
+                        # nothing to do here, we only want to remove the dir
+                        # if it's completely empty
+                        pass
+
+            fullfilepath = ""
+
+        # save generation details as exif metadata for VQGAN and CLIP-guided diffusion outputs
         if exists(fullfilepath):
+            exec_time = time.time() - start_time
             pngImage = PngImageFile(fullfilepath)
             #metadata = PngInfo()
             #metadata.add_text("VQGAN+CLIP", self.command)
@@ -260,8 +296,6 @@ class Controller:
                         + " -cuts " + str(self.cuts) \
                         + " -p \""
 
-                base += (self.prefix() + ' ' + subject + ' ' + self.suffix()).strip()
-
                 input_name = self.prompt_file_name.split('/')
                 input_name = input_name[len(input_name)-1]
                 input_name = input_name.split('\\')
@@ -271,8 +305,10 @@ class Controller:
                 # queue a work item for each style/artist
                 for style in self.styles:
                     if self.process == "stablediff":
-                        work = base + ", " + style.strip() + "\""
+                        # order matters more in stable diffusion, get the style in front of suffix
+                        work = base + (self.prefix() + " " + subject + ", " + style.strip() + ", " + self.suffix()).strip() + "\""
                     else:
+                        base += (self.prefix() + ' ' + subject + ' ' + self.suffix()).strip()
                         work = base + " | " + style.strip() + "\""
 
                     # VQGAN+CLIP -specific params
@@ -313,8 +349,8 @@ class Controller:
                     if self.process == "stablediff":
                         # Stable Diffusion -specific closing args:
                         if self.input_image != "":
-                            work += " --init-img \"" + self.input_image + "\"" + " --strength " + str(self.strength)
-                        work += " --seed " + str(seed) + " --skip_grid" + " --outdir " + outdir
+                            work += " --init-img \"../" + self.input_image + "\"" + " --strength " + str(self.strength)
+                        work += " --seed " + str(seed) + " --skip_grid" + " --n_iter 1" + " --outdir ../" + outdir
                         # note that SD doesn't allow specifying output filename
 
                     else:
