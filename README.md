@@ -147,9 +147,9 @@ After you've populated **example-prompts.txt** to your liking, you can simply ru
 ```
 python make_art.py example-prompts.txt
 ```
-Depending on your hardware and settings, each image will take anywhere from a few minutes to a few hours (on older hardware) to create.
+Depending on your hardware and settings, each image will take anywhere from a few seconds to a few hours (on older hardware) to create. If you can run Stable Diffusion, I strongly recommend it for the best results - both in speed and image quality.
 
-Output images are created in the **output/[current date]-[prompt file name]/** directory by default. The output directory will contain a JPG file for each image named for the subject & style used to create it. So for example, if you have "a monkey on a motorcycle" as one of your subjects, and "by Picasso" as a style, the output image will be created as output/[current date]-[prompt file name]/a-monkey-on-a-motorcycle-by-picasso.jpg.
+Output images are created in the **output/[current date]-[prompt file name]/** directory by default. The output directory will contain a JPG file for each image named for the subject & style used to create it. So for example, if you have "a monkey on a motorcycle" as one of your subjects, and "by Picasso" as a style, the output image will be created as output/[current date]-[prompt file name]/a-monkey-on-a-motorcycle-by-picasso.jpg (filenames will vary a bit depending on process used).
 
 You can press **CTRL+SHIFT+P** any time to pause execution (the pause will take effect when the current image is finished rendering). Press **CTRL+SHIFT+P** again to unpause. Useful if you're running this on your primary computer and need to use your GPU for something else for awhile. You can also press **CTRL+SHIFT+R** to reload the prompt file if you've changed it (the current work queue will be discarded, and a new one will be built from the contents of your prompt file). **Note that keyboard input only works on Windows.**
 
