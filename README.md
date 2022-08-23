@@ -124,8 +124,15 @@ curl -L -o stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt -C - "http
 ```
 **If the curl command doesn't download the checkpoint, it's gated behind a login.** You'll need to register [here](https://huggingface.co/CompVis) (only requires email and name) and then you can download the checkpoint file [here](https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt).  
 After downloading, you'll need to place the .ckpt file in the directory created above and name it **model.ckpt**.  
+
+**[16]** (Optional) Test Stable Diffusion:  
+The easiest way to test SD is to create a simple prompt file with **!PROCESS = stablediff** and a single subject. See *example-prompts.txt* and the next section for more information. Assuming you create a simple prompt file called *test.txt* first, you can test by running:
+```
+python make_art.py test.txt
+```
+Images should be saved to the **output** directory if successful (organized into subdirectories named for the date and prompt file).  
   
-If you're getting errors while running and haven't updated your installation in awhile, try updating some of the more important packages, for example:
+If you're getting errors outside of insufficient GPU VRAM while running and haven't updated your installation in awhile, try updating some of the more important packages, for example:
 ```
 pip install transformers -U
 ```
