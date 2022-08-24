@@ -4,7 +4,7 @@ Starting this ~8 months after I created the repo, but I'll do my best to keep th
 
 ## [2022.08.24]
 ### Added
-- Added support for Stable Diffusion's *--n_iter* parameter (see docs).
+- Added support for Stable Diffusion's *--n_iter* parameter (see [docs](https://github.com/rbbrdckybk/ai-art-generator#usage)).
 ### Changed
 - Changed the way that images are saved to subdirectories over multi-day run times. Previously, all images would be saved to your output directory in a subdir date-stamped with the date execution started. Now, output subdirs will always be datestamped relative to actual image creation time. Useful if you're running huge work queues that run for multiple days and you don't want thousands of images in a single directory!
 
