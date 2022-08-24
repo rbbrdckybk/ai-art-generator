@@ -1,3 +1,6 @@
+# Copyright 2021 - 2022, Bill Kennedy (https://github.com/rbbrdckybk/ai-art-generator)
+# SPDX-License-Identifier: MIT
+
 import threading
 import time
 import datetime
