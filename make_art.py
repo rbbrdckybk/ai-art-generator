@@ -48,7 +48,8 @@ D_USE_RN50x16 = "no"    # load RN50x16 CLIP model? (DIFFUSION ONLY)
 D_USE_RN50x64 = "no"    # load RN50x64 CLIP model? (DIFFUSION ONLY)
 STEPS = 50              # number of steps (STABLE DIFFUSION ONLY)
 SCALE = 7.5             # guidance scale (STABLE DIFFUSION ONLY)
-BATCH_SIZE = 1          # number of images to generate per prompt (STABLE DIFFUSION ONLY)
+SAMPLES = 1             # number of samples to generate (STABLE DIFFUSION ONLY)
+BATCH_SIZE = 1          # number of images to generate per sample (STABLE DIFFUSION ONLY)
 STRENGTH = 0.75         # strength of starting image influence (STABLE DIFFUSION ONLY)
 
 # Prevent threads from printing at same time.
@@ -64,6 +65,9 @@ class Worker(threading.Thread):
         self.callback = callback
 
     def run(self):
+        # doing it this way in case the date has changed since the
+        # work queue was created, vs having tons of files in a single dir
+        self.command = self.command.replace("[[date]]", str(date.today()))
         sd = False
         # create output folder if it doesn't exist
         if " -o " in self.command:
@@ -185,6 +189,7 @@ class Controller:
         self.d_use_rn50x64 = D_USE_RN50x64
         self.steps = STEPS
         self.scale = SCALE
+        self.samples = SAMPLES
         self.batch_size = BATCH_SIZE
         self.strength = STRENGTH
 
@@ -300,7 +305,7 @@ class Controller:
                 input_name = input_name[len(input_name)-1]
                 input_name = input_name.split('\\')
                 input_name = input_name[len(input_name)-1]
-                outdir="output/" + str(date.today()) + '-' + slugify(input_name.split('.', 1)[0])
+                outdir="output/[[date]]" + '-' + slugify(input_name.split('.', 1)[0])
 
                 # queue a work item for each style/artist
                 for style in self.styles:
@@ -350,7 +355,7 @@ class Controller:
                         # Stable Diffusion -specific closing args:
                         if self.input_image != "":
                             work += " --init-img \"../" + self.input_image + "\"" + " --strength " + str(self.strength)
-                        work += " --seed " + str(seed) + " --skip_grid" + " --n_iter 1" + " --outdir ../" + outdir
+                        work += " --seed " + str(seed) + " --skip_grid" + " --n_iter " + str(self.samples) + " --outdir ../" + outdir
                         # note that SD doesn't allow specifying output filename
 
                     else:
@@ -468,6 +473,11 @@ class Controller:
                 if value == '':
                     value = SCALE
                 self.scale = value
+
+            elif command == 'samples':
+                if value == '':
+                    value = SAMPLES
+                self.samples = value
 
             elif command == 'batch_size':
                 if value == '':
