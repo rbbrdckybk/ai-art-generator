@@ -3,6 +3,7 @@
 # These settings should be a good starting point for a GPU with 8GB of VRAM
 # You can try these out by typing:
 # python make_art.py example-prompts.txt
+# see docs for settings explanations: https://github.com/rbbrdckybk/ai-art-generator#usage
 # *******************************************************************************
 
 # *******************************************************************************
@@ -52,6 +53,7 @@ a shining lighthouse on the shore of a tropical island in a raging storm
 !HEIGHT = 384
 !STEPS = 50
 !SCALE = 7.5
+!SAMPLES = 1
 !BATCH_SIZE = 1
 
 # prompts here will use the stable diffusion settings above
