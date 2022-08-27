@@ -370,9 +370,9 @@ class Controller:
                     if self.process == "stablediff":
                         work += " --scale " + str(self.scale)
                         work += " --n_samples " + str(self.batch_size)
-                        # note/todo: to add support for cuda device, txt2img.py in stable-diffusion/scripts needs to be modified
-                        # leaving it out for now as the change will be overwritten every time there is a new SD release unless
-                        # it's incorporated into their repo
+
+                        if int(self.cuda_device) > 0:
+                            work += " --device \"cuda:" + str(self.cuda_device) + "\""
 
                     if self.process == "stablediff":
                         # Stable Diffusion -specific closing args:
