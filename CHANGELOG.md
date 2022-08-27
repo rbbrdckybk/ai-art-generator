@@ -8,6 +8,7 @@ For this update, I've created my own [/stable-diffusion fork](https://github.com
 
 ### Added
 - Added support for a low GPU memory -optimized fork of Stable Diffusion. It's now possible to create 512x512 images with only 4GB of VRAM! (see [docs](https://github.com/rbbrdckybk/ai-art-generator#usage)).
+- Added support for Stable Diffusion CUDA device specification.
 ### Changed
 - Removed the NSFW filter from Stable Diffusion.
 - Removed the automatic application of invisible image watermarks from Stable Diffusion (and removed invisible-watermark as a setup dependency).
