@@ -4,7 +4,7 @@ Starting this ~8 months after I created the repo, but I'll do my best to keep th
 
 ## [2022.08.27]
 
-For this update, I've created my own [/stable-diffusion fork](https://github.com/rbbrdckybk/stable-diffusion) (building on basujindal's excellent low-memory fork). This project now relies on it; if you have an existing install and want to upgrade, you'll need to delete the /stable-diffusion folder from your main project directory and then [follow the setup instructions starting at step #13](https://github.com/rbbrdckybk/ai-art-generator#setup).
+For this update, I've created my own [/stable-diffusion fork](https://github.com/rbbrdckybk/stable-diffusion) (building on basujindal's excellent low-memory fork). This project now relies on it; **if you have an existing install and want to upgrade, you'll need to delete the /stable-diffusion folder from your main project directory and then [follow the setup instructions starting at step #13](https://github.com/rbbrdckybk/ai-art-generator#setup)**.
 
 ### Added
 - Added support for a low GPU memory -optimized fork of Stable Diffusion. It's now possible to create 512x512 images with only 4GB of VRAM! (see [docs](https://github.com/rbbrdckybk/ai-art-generator#usage)).
