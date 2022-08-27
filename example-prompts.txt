@@ -49,6 +49,7 @@ a shining lighthouse on the shore of a tropical island in a raging storm
 
 # stable diffusion settings
 !PROCESS = stablediff
+!SD_LOW_MEMORY = no
 !WIDTH = 384
 !HEIGHT = 384
 !STEPS = 50

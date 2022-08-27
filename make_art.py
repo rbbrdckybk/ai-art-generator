@@ -54,6 +54,7 @@ SCALE = 7.5             # guidance scale (STABLE DIFFUSION ONLY)
 SAMPLES = 1             # number of samples to generate (STABLE DIFFUSION ONLY)
 BATCH_SIZE = 1          # number of images to generate per sample (STABLE DIFFUSION ONLY)
 STRENGTH = 0.75         # strength of starting image influence (STABLE DIFFUSION ONLY)
+SD_LOW_MEMORY = "no"    # use the memory-optimized SD fork? (yes/no) (STABLE DIFFUSION ONLY)
 
 # Prevent threads from printing at same time.
 print_lock = threading.Lock()
@@ -72,6 +73,7 @@ class Worker(threading.Thread):
         # work queue was created, vs having tons of files in a single dir
         self.command = self.command.replace("[[date]]", str(date.today()))
         sd = False
+
         # create output folder if it doesn't exist
         if " -o " in self.command:
             # this is vqgan/diffusion
@@ -115,13 +117,27 @@ class Worker(threading.Thread):
             for f in new_files:
                 if (".png" in f):
                     # todo: this is mostly a lazy copy from below and should be made into a function
+
+                    # grab seed from filename
+                    actual_seed = f.replace('seed_', '')
+                    actual_seed = actual_seed.split('_',1)[0]
+
+                    # save just the essential prompt params to metadata
+                    meta_prompt = self.command.split(" --prompt ",1)[1]
+                    meta_prompt = meta_prompt.split(" --outdir ",1)[0]
+
+                    # replace the seed in the command with the actual seed used
+                    pleft = meta_prompt.split(" --seed ",1)[0]
+                    pright = meta_prompt.split(" --seed ",1)[1].split(" --",1)[1]
+                    meta_prompt = pleft + " --seed " + actual_seed + " --" + pright
+
                     pngImage = PngImageFile(fullfilepath + "/samples/" + f)
                     im = pngImage.convert('RGB')
                     exif = im.getexif()
-                    exif[0x9286] = self.command
-                    exif[0x9c9c] = self.command.encode('utf16')
-                    exif[0x9c9d] = gpu_name.encode('utf16')
-                    exif[0x0131] = "AI Art (generated in " + str(datetime.timedelta(seconds=round(exec_time))) + ")"
+                    exif[0x9286] = meta_prompt
+                    exif[0x9c9c] = meta_prompt.encode('utf16')
+                    exif[0x9c9d] = ('AI art (' + gpu_name + ')').encode('utf16')
+                    exif[0x0131] = "https://github.com/rbbrdckybk/ai-art-generator"
                     newfilename = dt.now().strftime('%Y%m-%d%H-%M%S-') + str(nf_count)
                     nf_count += 1
                     im.save(fullfilepath + "/" + newfilename + ".jpg", exif=exif, quality=88)
@@ -140,10 +156,6 @@ class Worker(threading.Thread):
         if exists(fullfilepath):
             exec_time = time.time() - start_time
             pngImage = PngImageFile(fullfilepath)
-            #metadata = PngInfo()
-            #metadata.add_text("VQGAN+CLIP", self.command)
-            #pngImage.save(fullfilepath, pnginfo=metadata)
-            #pngImage = PngImageFile(fullfilepath)
 
             # convert to jpg and remove the original png file
             im = pngImage.convert('RGB')
@@ -195,6 +207,7 @@ class Controller:
         self.samples = SAMPLES
         self.batch_size = BATCH_SIZE
         self.strength = STRENGTH
+        self.sd_low_memory = SD_LOW_MEMORY
 
         self.work_queue = deque()
         self.work_done = False
@@ -285,13 +298,20 @@ class Controller:
                 base = ""
 
                 if self.process == "stablediff":
+
                     if self.input_image != "":
-                        base = "python scripts/img2img.py" \
-                            + " --ddim_steps " + str(self.steps) \
+                        base = "python scripts/img2img.py"
+                        if self.sd_low_memory.lower() == "yes":
+                            base = "python optimizedSD/optimized_img2img.py"
+
+                        base += " --ddim_steps " + str(self.steps) \
                             + " --prompt \""
                     else:
-                        base = "python scripts/txt2img.py" \
-                            + " --W " + str(self.width) \
+                        base = "python scripts/txt2img.py"
+                        if self.sd_low_memory.lower() == "yes":
+                            base = "python optimizedSD/optimized_txt2img.py"
+
+                        base += " --W " + str(self.width) \
                             + " --H " + str(self.height) \
                             + " --ddim_steps " + str(self.steps) \
                             + " --prompt \""
@@ -492,6 +512,12 @@ class Controller:
                     value = STRENGTH
                 self.strength = value
 
+            elif command == 'sd_low_memory':
+                if value == '':
+                    value = SD_LOW_MEMORY
+                self.sd_low_memory = value
+
+
             else:
                 print("\n*** WARNING: prompt file command not recognized: " + command.upper() + " (it will be ignored!) ***\n")
                 time.sleep(1.5)
@@ -610,6 +636,7 @@ if __name__ == '__main__':
     else:
         print("\nUsage: python make_art.py [prompt file]")
         print("Example: python make_art.py prompts.txt")
+        exit()
 
     if control and control.jobs_done > 0:
         print("Total jobs done: " + str(control.jobs_done))
