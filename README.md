@@ -109,12 +109,12 @@ You should see output.png created in the output directory, which should loosely 
 
 **[13]** Clone Stable Diffusion repository (if you're not interested in SD, you can skip everything from here to the end):
 ```
-git clone https://github.com/CompVis/stable-diffusion
+git clone https://github.com/rbbrdckybk/stable-diffusion
 ```
 
 **[14]** Install additional dependancies required by Stable Diffusion:
 ```
-pip install diffusers invisible-watermark 
+pip install diffusers
 ```
 
 **[15]** Download the Stable Diffusion pre-trained checkpoint file:
@@ -179,6 +179,7 @@ For **[setting to change]**, valid directives are:
  * SAMPLES (stablediff only)
  * BATCH_SIZE (stablediff only)
  * STRENGTH (stablediff only)
+ * SD_LOW_MEMORY (stablediff only)
 
 Some examples: 
 ```
@@ -228,6 +229,10 @@ Sets the batch size when using Stable Diffusion to 1 (the default). Values over 
 !STRENGTH = 0.75
 ```
 Sets the influence of the starting image to 0.75 (the default). Only relevant when using Stable Diffusion with an input image. Valid values are between 0-1, with 1 corresponding to complete destruction of the input image, and 0 corresponding to leaving the starting image completely intact. Values between 0.25 and 0.75 tend to give interesting results.
+```
+!SD_LOW_MEMORY = no
+```
+Use a forked repo with much lower GPU memory requirements when using Stable Diffusion (yes/no)? Setting this to **yes** will switch over to using a memory-optimized version of SD that will allow you to create higher resolution images with far less GPU memory (512x512 images should only require around 4GB of VRAM). The trade-off is that inference is **much** slower compared to the default official repo. For comparison: on a RTX 3060, a 512x512 image at default settings takes around 12 seconds to create; with *!SD_LOW_MEMORY = yes*, the same image takes nearly a minute. Recommend keeping this off unless you have under 8GB GPU VRAM, or want to experiment with creating larger images before upscaling.
 
 
 TODO: finish settings examples & add usage tips/examples
