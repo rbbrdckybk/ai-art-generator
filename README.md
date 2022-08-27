@@ -232,7 +232,7 @@ Sets the influence of the starting image to 0.75 (the default). Only relevant wh
 ```
 !SD_LOW_MEMORY = no
 ```
-Use a forked repo with much lower GPU memory requirements when using Stable Diffusion (yes/no)? Setting this to **yes** will switch over to using a memory-optimized version of SD that will allow you to create higher resolution images with far less GPU memory (512x512 images should only require around 4GB of VRAM). The trade-off is that inference is **much** slower compared to the default official repo. For comparison: on a RTX 3060, a 512x512 image at default settings takes around 12 seconds to create; with *!SD_LOW_MEMORY = yes*, the same image takes nearly a minute. Recommend keeping this off unless you have under 8GB GPU VRAM, or want to experiment with creating larger images before upscaling.
+Use a forked repo with much lower GPU memory requirements when using Stable Diffusion (yes/no)? Setting this to **yes** will switch over to using a memory-optimized version of SD that will allow you to create higher resolution images with far less GPU memory (512x512 images should only require around 4GB of VRAM). The trade-off is that inference is **much** slower compared to the default official repo. For comparison: on a RTX 3060, a 512x512 image at default settings takes around 12 seconds to create; with *!SD_LOW_MEMORY = yes*, the same image takes over a minute. Recommend keeping this off unless you have under 8GB GPU VRAM, or want to experiment with creating larger images before upscaling.
 
 
 TODO: finish settings examples & add usage tips/examples
