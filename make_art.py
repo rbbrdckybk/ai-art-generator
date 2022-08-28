@@ -118,18 +118,19 @@ class Worker(threading.Thread):
                 if (".png" in f):
                     # todo: this is mostly a lazy copy from below and should be made into a function
 
-                    # grab seed from filename
-                    actual_seed = f.replace('seed_', '')
-                    actual_seed = actual_seed.split('_',1)[0]
-
                     # save just the essential prompt params to metadata
                     meta_prompt = self.command.split(" --prompt ",1)[1]
                     meta_prompt = meta_prompt.split(" --outdir ",1)[0]
 
-                    # replace the seed in the command with the actual seed used
-                    pleft = meta_prompt.split(" --seed ",1)[0]
-                    pright = meta_prompt.split(" --seed ",1)[1].split(" --",1)[1]
-                    meta_prompt = pleft + " --seed " + actual_seed + " --" + pright
+                    if 'seed_' in f:
+                        # grab seed from filename
+                        actual_seed = f.replace('seed_', '')
+                        actual_seed = actual_seed.split('_',1)[0]
+
+                        # replace the seed in the command with the actual seed used
+                        pleft = meta_prompt.split(" --seed ",1)[0]
+                        pright = meta_prompt.split(" --seed ",1)[1].split(" --",1)[1]
+                        meta_prompt = pleft + " --seed " + actual_seed + " --" + pright
 
                     pngImage = PngImageFile(fullfilepath + "/samples/" + f)
                     im = pngImage.convert('RGB')
