@@ -130,6 +130,12 @@ if args.make_video and args.make_zoom_video:
     print("Warning: Make video and make zoom video are mutually exclusive.")
     args.make_video = False
 
+# create output dir if necessary
+if '/' in args.output:
+    odir = args.output.rsplit('/', 1)[0]
+    if not os.path.exists(odir):
+        os.mkdir(odir)
+
 # Make video steps directory
 if args.make_video or args.make_zoom_video:
     if not os.path.exists('steps'):
