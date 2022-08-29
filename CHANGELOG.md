@@ -2,6 +2,11 @@
 
 Starting this ~8 months after I created the repo, but I'll do my best to keep this updated with major changes going forward!
 
+## [2022.08.29]
+### Added
+- Integrated optional [ESRGAN/GFPGAN](https://github.com/xinntao/Real-ESRGAN) upscaling for use with Stable Diffusion (see [docs](https://github.com/rbbrdckybk/ai-art-generator#advanced-usage)).
+- Added a random prompt builder (**random_art.py**) as an alternative method to generate images. See [example](https://github.com/rbbrdckybk/ai-art-generator/blob/main/prompts/random-example.txt) usage until I have a chance to document more fully. Basically you define prompt structure, along with fragments that are randomized and the process will churn out random images until you stop it.
+
 ## [2022.08.27]
 
 For this update, I've created my own [/stable-diffusion fork](https://github.com/rbbrdckybk/stable-diffusion) (building on basujindal's excellent low-memory fork). This project now relies on it; **if you have an existing install and want to upgrade, you'll need to delete the /stable-diffusion folder from your main project directory and then [follow the setup instructions starting at step #13](https://github.com/rbbrdckybk/ai-art-generator#setup)**.
