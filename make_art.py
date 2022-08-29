@@ -301,16 +301,16 @@ class Controller:
                 if self.process == "stablediff":
 
                     if self.input_image != "":
-                        base = "python scripts/img2img.py"
+                        base = "python scripts_mod/img2img.py"
                         if self.sd_low_memory.lower() == "yes":
-                            base = "python optimizedSD/optimized_img2img.py"
+                            base = "python scripts_mod/optimized_img2img.py"
 
                         base += " --ddim_steps " + str(self.steps) \
                             + " --prompt \""
                     else:
-                        base = "python scripts/txt2img.py"
+                        base = "python scripts_mod/txt2img.py"
                         if self.sd_low_memory.lower() == "yes":
-                            base = "python optimizedSD/optimized_txt2img.py"
+                            base = "python scripts_mod/optimized_txt2img.py"
 
                         base += " --W " + str(self.width) \
                             + " --H " + str(self.height) \
