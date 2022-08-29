@@ -56,6 +56,9 @@ a shining lighthouse on the shore of a tropical island in a raging storm
 !SCALE = 7.5
 !SAMPLES = 1
 !BATCH_SIZE = 1
+!USE_UPSCALE = no
+!UPSCALE_AMOUNT = 2.0
+!UPSCALE_FACE_ENH = no
 
 # prompts here will use the stable diffusion settings above
 a proud corgi astronaut

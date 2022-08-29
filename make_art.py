@@ -55,6 +55,9 @@ SAMPLES = 1             # number of samples to generate (STABLE DIFFUSION ONLY)
 BATCH_SIZE = 1          # number of images to generate per sample (STABLE DIFFUSION ONLY)
 STRENGTH = 0.75         # strength of starting image influence (STABLE DIFFUSION ONLY)
 SD_LOW_MEMORY = "no"    # use the memory-optimized SD fork? (yes/no) (STABLE DIFFUSION ONLY)
+USE_UPSCALE = "no"      # upscale output images via ESRGAN/GFPGAN? (STABLE DIFFUSION ONLY)
+UPSCALE_AMOUNT = 2.0    # amount to upscale, default is 2.0x (STABLE DIFFUSION ONLY)
+UPSCALE_FACE_ENH = "no" # use GFPGAN, optimized for faces (STABLE DIFFUSION ONLY)
 
 # Prevent threads from printing at same time.
 print_lock = threading.Lock()
@@ -63,10 +66,13 @@ gpu_name = get_device_name()
 
 # worker thread executes specified shell command
 class Worker(threading.Thread):
-    def __init__(self, command, callback=lambda: None):
+    def __init__(self, command, do_upscale, upscl_amt, upscl_face, callback=lambda: None):
         threading.Thread.__init__(self)
         self.command = command
         self.callback = callback
+        self.use_upscale = do_upscale
+        self.upscale_amount = upscl_amt
+        self.upscale_face_enh = upscl_face
 
     def run(self):
         # doing it this way in case the date has changed since the
@@ -97,6 +103,13 @@ class Worker(threading.Thread):
             fullfilepath = self.command.split(" --outdir ",1)[1]
             fullfilepath = fullfilepath.replace("../","")
 
+        do_upscale = False
+        face_enh = False
+        if self.use_upscale.lower() == "yes":
+            do_upscale = True
+            if self.upscale_face_enh.lower() == "yes":
+                face_enh = True
+
         with print_lock:
             print("Command: " + self.command)
 
@@ -109,6 +122,21 @@ class Worker(threading.Thread):
                 subprocess.call(shlex.split(self.command), cwd=(cwd + '\stable-diffusion'))
             else:
                 subprocess.call(shlex.split(self.command), cwd=(cwd + '/stable-diffusion'))
+
+            if do_upscale:
+                new_files = os.listdir(fullfilepath + "/samples")
+                if len(new_files) > 0:
+                    upscale(self.upscale_amount, fullfilepath + "/samples", face_enh)
+
+                    # remove originals if upscaled version present
+                    new_files = os.listdir(fullfilepath + "/samples")
+                    for f in new_files:
+                        if (".png" in f):
+                            basef = f.replace(".png", "")
+                            if basef[-2:] == "_u":
+                                # this is an upscaled image, delete the original
+                                if exists(fullfilepath + "/samples/" + basef[:-2] + ".png"):
+                                    os.remove(fullfilepath + "/samples/" + basef[:-2] + ".png")
 
             # find the new image(s) that SD created: re-name, process, and move them
             new_files = os.listdir(fullfilepath + "/samples")
@@ -144,12 +172,14 @@ class Worker(threading.Thread):
                     im.save(fullfilepath + "/" + newfilename + ".jpg", exif=exif, quality=88)
                     if exists(fullfilepath + "/samples/" + f):
                         os.remove(fullfilepath + "/samples/" + f)
-                    try:
-                        os.rmdir(fullfilepath + "/samples")
-                    except OSError as e:
-                        # nothing to do here, we only want to remove the dir
-                        # if it's completely empty
-                        pass
+
+            # remove the /samples dir if empty
+            try:
+                os.rmdir(fullfilepath + "/samples")
+            except OSError as e:
+                # nothing to do here, we only want to remove the dir
+                # if it's completely empty
+                pass
 
             fullfilepath = ""
 
@@ -177,6 +207,37 @@ class Worker(threading.Thread):
         with print_lock:
             print("Worker done.")
         self.callback()
+
+# ESRGAN/GFPGAN upscaling:
+# scale - upscale by this amount, default is 2.0x
+# dir - upscale all images in this folder
+# do_face_enhance - True/False use GFPGAN (for faces)
+def upscale(scale, dir, do_face_enhance):
+    command = "python inference_realesrgan.py -n RealESRGAN_x4plus --suffix u -s "
+
+    # check that scale is a valid float, otherwise use default scale of 4
+    try :
+        float(scale)
+        command += str(scale)
+    except :
+        command += "2"
+
+    # append the input/output dir
+    command += " -i ..//" + dir + " -o ..//" + dir
+
+    # whether to use GFPGAN for faces
+    if do_face_enhance:
+        command += " --face_enhance"
+
+    cwd = os.getcwd()
+    print ("Invoking Real-ESRGAN: " + command)
+
+    # invoke Real-ESRGAN
+    if sys.platform == "win32" or os.name == 'nt':
+        subprocess.call(shlex.split(command), cwd=(cwd + '\Real-ESRGAN'), stderr=subprocess.DEVNULL)
+    else:
+        subprocess.call(shlex.split(command), cwd=(cwd + '/Real-ESRGAN'), stderr=subprocess.DEVNULL)
+
 
 # controller manages worker thread(s) and user input
 # TODO change worker_idle to array of bools to manage multiple threads/gpus
@@ -209,7 +270,9 @@ class Controller:
         self.batch_size = BATCH_SIZE
         self.strength = STRENGTH
         self.sd_low_memory = SD_LOW_MEMORY
-
+        self.use_upscale = USE_UPSCALE
+        self.upscale_amount = UPSCALE_AMOUNT
+        self.upscale_face_enh = UPSCALE_FACE_ENH
         self.work_queue = deque()
         self.work_done = False
         self.worker_idle = True
@@ -518,6 +581,20 @@ class Controller:
                     value = SD_LOW_MEMORY
                 self.sd_low_memory = value
 
+            elif command == 'use_upscale':
+                if value == '':
+                    value = USE_UPSCALE
+                self.use_upscale = value
+
+            elif command == 'upscale_amount':
+                if value == '':
+                    value = UPSCALE_AMOUNT
+                self.upscale_amount = value
+
+            elif command == 'upscale_face_enh':
+                if value == '':
+                    value = UPSCALE_FACE_ENH
+                self.upscale_face_enh = value
 
             else:
                 print("\n*** WARNING: prompt file command not recognized: " + command.upper() + " (it will be ignored!) ***\n")
@@ -528,7 +605,7 @@ class Controller:
         self.worker_idle = False
         with print_lock:
             print("\n\nWorker starting job #" + str(self.jobs_done+1) + ":")
-        thread = Worker(command, self.on_work_done)
+        thread = Worker(command, self.use_upscale, self.upscale_amount, self.upscale_face_enh, self.on_work_done)
         thread.start()
 
     # callback for worker threads when finished

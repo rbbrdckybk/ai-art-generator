@@ -31,6 +31,11 @@ DELIM = " "		# delimiter to use between prompt sections, default is space
 MIN_STRENGTH = 0.55     # min strength of starting image influence
 MAX_STRENGTH = 0.75     # max strength of starting image influence
 
+# ESRGAN/GFPGAN upscaling settings
+USE_UPSCALE = no	# use upscaling?
+UPSCALE_AMOUNT = 2.0	# upscale amount, default = 2.0x
+UPSCALE_FACE_ENH = no	# use GFPGAN (best for faces)?
+
 
 # *******************************************************************************
 # example first prompt section

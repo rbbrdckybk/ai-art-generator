@@ -38,6 +38,9 @@ BATCH_SIZE = 1          # number of images to generate per sample, huge VRAM inc
 MIN_STRENGTH = 0.50     # min strength of starting image influence
 MAX_STRENGTH = 0.50     # max strength of starting image influence
 DELIM = " "             # default prompt delimiter
+USE_UPSCALE = "no"      # upscale output images via ESRGAN/GFPGAN? (STABLE DIFFUSION ONLY)
+UPSCALE_AMOUNT = 2.0    # amount to upscale, default is 2.0x (STABLE DIFFUSION ONLY)
+UPSCALE_FACE_ENH = "no" # use GFPGAN, optimized for faces (STABLE DIFFUSION ONLY)
 
 # directory to write finished output image files
 # subdirectories will be automatically created under this folder organized by date
@@ -67,14 +70,36 @@ class Worker(threading.Thread):
         filepath = fullfilepath.replace(fullfilepath[fullfilepath.rindex('/'):], "")
         Path(filepath).mkdir(parents=True, exist_ok=True)
 
+        do_upscale = False
+        face_enh = False
+        if USE_UPSCALE.lower() == "yes":
+            do_upscale = True
+            if UPSCALE_FACE_ENH.lower() == "yes":
+                face_enh = True
+
         # invoke Stable Diffusion
         if sys.platform == "win32" or os.name == 'nt':
             subprocess.call(shlex.split(self.command), cwd=(cwd + '\stable-diffusion'))
         else:
             subprocess.call(shlex.split(self.command), cwd=(cwd + '/stable-diffusion'))
 
-        # find the new image(s) that SD created: re-name, process, and move them
         fullfilepath = fullfilepath.replace("../","")
+        if do_upscale:
+            new_files = os.listdir(fullfilepath + "/samples")
+            if len(new_files) > 0:
+                upscale(UPSCALE_AMOUNT, fullfilepath + "/samples", face_enh)
+
+                # remove originals if upscaled version present
+                new_files = os.listdir(fullfilepath + "/samples")
+                for f in new_files:
+                    if (".png" in f):
+                        basef = f.replace(".png", "")
+                        if basef[-2:] == "_u":
+                            # this is an upscaled image, delete the original
+                            if exists(fullfilepath + "/samples/" + basef[:-2] + ".png"):
+                                os.remove(fullfilepath + "/samples/" + basef[:-2] + ".png")
+
+        # find the new image(s) that SD created: re-name, process, and move them
         new_files = os.listdir(fullfilepath + "/samples")
         nf_count = 0
 
@@ -96,15 +121,47 @@ class Worker(threading.Thread):
                 im.save(fullfilepath + "/" + newfilename + ".jpg", exif=exif, quality=88)
                 if exists(fullfilepath + "/samples/" + f):
                     os.remove(fullfilepath + "/samples/" + f)
-                try:
-                    os.rmdir(fullfilepath + "/samples")
-                except OSError as e:
-                    # nothing to do here, we only want to remove the dir if empty
-                    pass
+        try:
+            os.rmdir(fullfilepath + "/samples")
+        except OSError as e:
+            # nothing to do here, we only want to remove the dir if empty
+            pass
 
         with print_lock:
             print("Worker done.")
         self.callback()
+
+
+# ESRGAN/GFPGAN upscaling:
+# scale - upscale by this amount, default is 2.0x
+# dir - upscale all images in this folder
+# do_face_enhance - True/False use GFPGAN (for faces)
+def upscale(scale, dir, do_face_enhance):
+    command = "python inference_realesrgan.py -n RealESRGAN_x4plus --suffix u -s "
+
+    # check that scale is a valid float, otherwise use default scale of 4
+    try :
+        float(scale)
+        command += str(scale)
+    except :
+        command += "2"
+
+    # append the input/output dir
+    command += " -i ..//" + dir + " -o ..//" + dir
+
+    # whether to use GFPGAN for faces
+    if do_face_enhance:
+        command += " --face_enhance"
+
+    cwd = os.getcwd()
+    print ("Invoking Real-ESRGAN: " + command)
+
+    # invoke Real-ESRGAN
+    if sys.platform == "win32" or os.name == 'nt':
+        subprocess.call(shlex.split(command), cwd=(cwd + '\Real-ESRGAN'), stderr=subprocess.DEVNULL)
+    else:
+        subprocess.call(shlex.split(command), cwd=(cwd + '/Real-ESRGAN'), stderr=subprocess.DEVNULL)
+
 
 # maintains the info in each input file [prompt] section
 class PromptSection():
@@ -335,6 +392,21 @@ class PromptManager():
                         if value != '':
                             global SD_LOW_MEMORY
                             SD_LOW_MEMORY = value
+
+                    elif command == 'use_upscale':
+                        if value != '':
+                            global USE_UPSCALE
+                            USE_UPSCALE = value
+
+                    elif command == 'upscale_amount':
+                        if value != '':
+                            global UPSCALE_AMOUNT
+                            UPSCALE_AMOUNT = value
+
+                    elif command == 'upscale_face_enh':
+                        if value != '':
+                            global UPSCALE_FACE_ENH
+                            UPSCALE_FACE_ENH = value
 
                     elif command == 'delim':
                         if value != '':
