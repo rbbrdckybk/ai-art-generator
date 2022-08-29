@@ -130,7 +130,19 @@ The easiest way to test SD is to create a simple prompt file with **!PROCESS = s
 ```
 python make_art.py test.txt
 ```
-Images should be saved to the **output** directory if successful (organized into subdirectories named for the date and prompt file).  
+Images should be saved to the **output** directory if successful (organized into subdirectories named for the date and prompt file).
+
+**[17]** Setup ESRGAN/GFPGAN (if you're not planning to upscale images, you can skip this and everything else):
+```
+git clone https://github.com/xinntao/Real-ESRGAN
+pip install basicsr facexlib gfpgan
+cd Real-ESRGAN
+curl -L -o experiments/pretrained_models/RealESRGAN_x4plus.pth -C - "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+python setup.py develop
+cd ..
+```
+  
+You're done!
   
 If you're getting errors outside of insufficient GPU VRAM while running and haven't updated your installation in awhile, try updating some of the more important packages, for example:
 ```
@@ -180,6 +192,9 @@ For **[setting to change]**, valid directives are:
  * BATCH_SIZE (stablediff only)
  * STRENGTH (stablediff only)
  * SD_LOW_MEMORY (stablediff only)
+ * USE_UPSCALE (stablediff only)
+ * UPSCALE_AMOUNT (stablediff only)
+ * UPSCALE_FACE_ENH (stablediff only)
 
 Some examples: 
 ```
@@ -233,6 +248,17 @@ Sets the influence of the starting image to 0.75 (the default). Only relevant wh
 !SD_LOW_MEMORY = no
 ```
 Use a forked repo with much lower GPU memory requirements when using Stable Diffusion (yes/no)? Setting this to **yes** will switch over to using a memory-optimized version of SD that will allow you to create higher resolution images with far less GPU memory (512x512 images should only require around 4GB of VRAM). The trade-off is that inference is **much** slower compared to the default official repo. For comparison: on a RTX 3060, a 512x512 image at default settings takes around 12 seconds to create; with *!SD_LOW_MEMORY = yes*, the same image takes over a minute. Recommend keeping this off unless you have under 8GB GPU VRAM, or want to experiment with creating larger images before upscaling.
+```
+!USE_UPSCALE = no
+```
+Automatically upscale images created with Stable Diffusion (yes/no)? Uses ESRGAN/GFPGAN (see additional settings below).
+```
+!UPSCALE_AMOUNT = 2
+```
+How much to scale when *!USE_UPSCALE = yes*. Default is 2.0x; higher values require more VRAM and time.
+```
+!UPSCALE_FACE_ENH = no
+```
+Whether or not to use GFPGAN (vs default ESRGAN) when upscaling. GFPGAN provides the best results with faces, but may provide slightly worse results if used on non-face subjects.
 
-
-TODO: finish settings examples & add usage tips/examples
+TODO: finish settings examples & add usage tips/examples, document random_art.py
