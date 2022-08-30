@@ -120,14 +120,14 @@ class Worker(threading.Thread):
         meta_prompt = self.command.split(" --prompt ",1)[1]
         meta_prompt = meta_prompt.split(" --outdir ",1)[0]
 
+        upscale_text = ""
         if do_upscale:
-            upscale_text = "   (upscaled "
+            upscale_text = " (upscaled "
             upscale_text += str(UPSCALE_AMOUNT) + "x via "
             if face_enh:
                 upscale_text += "GFPGAN)"
             else:
                 upscale_text += "ESRGAN)"
-            meta_prompt += upscale_text
 
         for f in new_files:
             if (".png" in f):
@@ -136,7 +136,7 @@ class Worker(threading.Thread):
                 exif = im.getexif()
                 exif[0x9286] = meta_prompt
                 exif[0x9c9c] = meta_prompt.encode('utf16')
-                exif[0x9c9d] = ('AI art (' + gpu_name + ')').encode('utf16')
+                exif[0x9c9d] = ('AI art (' + gpu_name + ')' + upscale_text).encode('utf16')
                 exif[0x0131] = "https://github.com/rbbrdckybk/ai-art-generator"
                 newfilename = dt.now().strftime('%Y%m-%d%H-%M%S-') + str(nf_count)
                 nf_count += 1

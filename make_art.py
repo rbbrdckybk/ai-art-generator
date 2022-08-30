@@ -34,6 +34,7 @@ PROCESS = "vqgan"       # which AI process to use, default is vqgan
 WIDTH = 512             # output image width, default is 512
 HEIGHT = 512            # output image height, default is 512
 ITERATIONS = 500        # number of times to run, default is 500 (VQGAN/DIFFUSION ONLY)
+SEED = -1               # initialize with a specific seed value instead of random?
 CUTS = 32               # default = 32 (VQGAN/DIFFUSION ONLY)
 INPUT_IMAGE = ""        # path and filename of starting/input image, eg: samples/vectors/face_07.png
 SKIP_STEPS = -1         # steps to skip when using init image (DIFFUSION ONLY)
@@ -174,21 +175,21 @@ class Worker(threading.Thread):
                         pright = meta_prompt.split(" --seed ",1)[1].strip()
                         meta_prompt = pleft + " --seed " + actual_seed
 
-                        if do_upscale:
-                            upscale_text = "   (upscaled "
-                            upscale_text += str(self.upscale_amount) + "x via "
-                            if face_enh:
-                                upscale_text += "GFPGAN)"
-                            else:
-                                upscale_text += "ESRGAN)"
-                            meta_prompt += upscale_text
+                    upscale_text = ""
+                    if do_upscale:
+                        upscale_text = " (upscaled "
+                        upscale_text += str(self.upscale_amount) + "x via "
+                        if face_enh:
+                            upscale_text += "GFPGAN)"
+                        else:
+                            upscale_text += "ESRGAN)"
 
                     pngImage = PngImageFile(fullfilepath + "/samples/" + f)
                     im = pngImage.convert('RGB')
                     exif = im.getexif()
                     exif[0x9286] = meta_prompt
                     exif[0x9c9c] = meta_prompt.encode('utf16')
-                    exif[0x9c9d] = ('AI art (' + gpu_name + ')').encode('utf16')
+                    exif[0x9c9d] = ('AI art (' + gpu_name + ')' + upscale_text).encode('utf16')
                     exif[0x0131] = "https://github.com/rbbrdckybk/ai-art-generator"
                     newfilename = dt.now().strftime('%Y%m-%d%H-%M%S-') + str(nf_count)
                     nf_count += 1
@@ -271,6 +272,7 @@ class Controller:
         self.width = WIDTH
         self.height = HEIGHT
         self.iterations = ITERATIONS
+        self.seed = SEED
         self.cuda_device = CUDA_DEVICE
         self.learning_rate = LEARNING_RATE
         self.cuts = CUTS
@@ -460,6 +462,8 @@ class Controller:
                         work += " -drn50x64 " + self.d_use_rn50x64
 
                     seed = random.randint(1, 2**32) - 1000
+                    if int(self.seed) > -1:
+                        seed = int(self.seed)
 
                     # Stable Diffusion -specific params:
                     if self.process == "stablediff":
@@ -523,6 +527,11 @@ class Controller:
                 if value == '':
                     value = ITERATIONS
                 self.iterations = value
+
+            elif command == 'seed':
+                if value == '':
+                    value = SEED
+                self.seed = value
 
             elif command == 'learning_rate':
                 if value == '':
