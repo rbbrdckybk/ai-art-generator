@@ -189,12 +189,12 @@ For **[setting to change]**, valid directives are:
  * STEPS (stablediff only)
  * CHANNELS (stablediff only)
  * SAMPLES (stablediff only)
- * BATCH_SIZE (stablediff only)
  * STRENGTH (stablediff only)
  * SD_LOW_MEMORY (stablediff only)
  * USE_UPSCALE (stablediff only)
  * UPSCALE_AMOUNT (stablediff only)
  * UPSCALE_FACE_ENH (stablediff only)
+ * UPSCALE_KEEP_ORG (stablediff only)
 
 Some examples: 
 ```
@@ -237,10 +237,6 @@ Sets the guidance scale when using Stable Diffusion to 7.5 (the default). Higher
 ```
 Sets the number of times to sample when using Stable Diffusion to 1 (the default). Values over 1 will cause multiple output images to be created for each prompt at a slight time savings per image. There is no cost in GPU VRAM required for incrementing this.
 ```
-!BATCH_SIZE = 1
-```
-Sets the batch size when using Stable Diffusion to 1 (the default). Values over 1 will cause multiple output images to be created for each sample (see above) at an additional slight time savings per image. There is a large cost in GPU VRAM required for incrementing this - I'm not able to get over 2 with otherwise default settings on 12GB VRAM, and 5 appears to be the max on 24GB. If you set SAMPLES to 5 and BATCH_SIZE to 3, you'll end up with 15 total output images.
-```
 !STRENGTH = 0.75
 ```
 Sets the influence of the starting image to 0.75 (the default). Only relevant when using Stable Diffusion with an input image. Valid values are between 0-1, with 1 corresponding to complete destruction of the input image, and 0 corresponding to leaving the starting image completely intact. Values between 0.25 and 0.75 tend to give interesting results.
@@ -260,5 +256,9 @@ How much to scale when *!USE_UPSCALE = yes*. Default is 2.0x; higher values requ
 !UPSCALE_FACE_ENH = no
 ```
 Whether or not to use GFPGAN (vs default ESRGAN) when upscaling. GFPGAN provides the best results with faces, but may provide slightly worse results if used on non-face subjects.
+```
+!UPSCALE_KEEP_ORG = no
+```
+Keep the original unmodified image when upscaling (yes/no)? If set to no (the default), the original image will be deleted. If set to yes, the original image will be saved in an **/original** subdirectory of the image output folder.
 
 TODO: finish settings examples & add usage tips/examples, document random_art.py
