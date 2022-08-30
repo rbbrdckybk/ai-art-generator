@@ -35,6 +35,7 @@ MAX_STRENGTH = 0.75     # max strength of starting image influence
 USE_UPSCALE = no	# use upscaling?
 UPSCALE_AMOUNT = 2.0	# upscale amount, default = 2.0x
 UPSCALE_FACE_ENH = no	# use GFPGAN (best for faces)?
+UPSCALE_KEEP_ORG = no	# keep original image when upscaling?
 
 
 # *******************************************************************************

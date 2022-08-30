@@ -55,9 +55,11 @@ SAMPLES = 1             # number of samples to generate (STABLE DIFFUSION ONLY)
 BATCH_SIZE = 1          # number of images to generate per sample (STABLE DIFFUSION ONLY)
 STRENGTH = 0.75         # strength of starting image influence (STABLE DIFFUSION ONLY)
 SD_LOW_MEMORY = "no"    # use the memory-optimized SD fork? (yes/no) (STABLE DIFFUSION ONLY)
+SD_LOW_MEM_TURBO = "no" # faster at the cost of ~1GB VRAM (only when SD_LOW_MEMORY = "yes")
 USE_UPSCALE = "no"      # upscale output images via ESRGAN/GFPGAN? (STABLE DIFFUSION ONLY)
 UPSCALE_AMOUNT = 2.0    # amount to upscale, default is 2.0x (STABLE DIFFUSION ONLY)
 UPSCALE_FACE_ENH = "no" # use GFPGAN, optimized for faces (STABLE DIFFUSION ONLY)
+UPSCALE_KEEP_ORG = "no" # save the original non-upscaled image when using upscaling?
 
 # Prevent threads from printing at same time.
 print_lock = threading.Lock()
@@ -66,13 +68,14 @@ gpu_name = get_device_name()
 
 # worker thread executes specified shell command
 class Worker(threading.Thread):
-    def __init__(self, command, do_upscale, upscl_amt, upscl_face, callback=lambda: None):
+    def __init__(self, command, do_upscale, upscl_amt, upscl_face, upscl_keep, callback=lambda: None):
         threading.Thread.__init__(self)
         self.command = command
         self.callback = callback
         self.use_upscale = do_upscale
         self.upscale_amount = upscl_amt
         self.upscale_face_enh = upscl_face
+        self.upscale_keep_org = upscl_keep
 
     def run(self):
         # doing it this way in case the date has changed since the
@@ -105,10 +108,13 @@ class Worker(threading.Thread):
 
         do_upscale = False
         face_enh = False
+        upscale_keep_orig = False
         if self.use_upscale.lower() == "yes":
             do_upscale = True
             if self.upscale_face_enh.lower() == "yes":
                 face_enh = True
+            if self.upscale_keep_org.lower() == "yes":
+                upscale_keep_orig = True
 
         with print_lock:
             print("Command: " + self.command)
@@ -135,8 +141,16 @@ class Worker(threading.Thread):
                             basef = f.replace(".png", "")
                             if basef[-2:] == "_u":
                                 # this is an upscaled image, delete the original
+                                # or save it in /original if desired
                                 if exists(fullfilepath + "/samples/" + basef[:-2] + ".png"):
-                                    os.remove(fullfilepath + "/samples/" + basef[:-2] + ".png")
+                                    if upscale_keep_orig:
+                                        # move the original to /original
+                                        orig_dir = fullfilepath + "/original"
+                                        Path(orig_dir).mkdir(parents=True, exist_ok=True)
+                                        os.replace(fullfilepath + "/samples/" + basef[:-2] + ".png", \
+                                            orig_dir + "/" + basef[:-2] + ".png")
+                                    else:
+                                        os.remove(fullfilepath + "/samples/" + basef[:-2] + ".png")
 
             # find the new image(s) that SD created: re-name, process, and move them
             new_files = os.listdir(fullfilepath + "/samples")
@@ -157,8 +171,17 @@ class Worker(threading.Thread):
 
                         # replace the seed in the command with the actual seed used
                         pleft = meta_prompt.split(" --seed ",1)[0]
-                        pright = meta_prompt.split(" --seed ",1)[1].split(" --",1)[1]
-                        meta_prompt = pleft + " --seed " + actual_seed + " --" + pright
+                        pright = meta_prompt.split(" --seed ",1)[1].strip()
+                        meta_prompt = pleft + " --seed " + actual_seed
+
+                        if do_upscale:
+                            upscale_text = "   (upscaled "
+                            upscale_text += str(self.upscale_amount) + "x via "
+                            if face_enh:
+                                upscale_text += "GFPGAN)"
+                            else:
+                                upscale_text += "ESRGAN)"
+                            meta_prompt += upscale_text
 
                     pngImage = PngImageFile(fullfilepath + "/samples/" + f)
                     im = pngImage.convert('RGB')
@@ -270,9 +293,11 @@ class Controller:
         self.batch_size = BATCH_SIZE
         self.strength = STRENGTH
         self.sd_low_memory = SD_LOW_MEMORY
+        self.sd_low_mem_turbo = SD_LOW_MEM_TURBO
         self.use_upscale = USE_UPSCALE
         self.upscale_amount = UPSCALE_AMOUNT
         self.upscale_face_enh = UPSCALE_FACE_ENH
+        self.upscale_keep_org = UPSCALE_KEEP_ORG
         self.work_queue = deque()
         self.work_done = False
         self.worker_idle = True
@@ -368,17 +393,23 @@ class Controller:
                         if self.sd_low_memory.lower() == "yes":
                             base = "python scripts_mod/optimized_img2img.py"
 
-                        base += " --ddim_steps " + str(self.steps) \
-                            + " --prompt \""
                     else:
                         base = "python scripts_mod/txt2img.py"
                         if self.sd_low_memory.lower() == "yes":
                             base = "python scripts_mod/optimized_txt2img.py"
 
                         base += " --W " + str(self.width) \
-                            + " --H " + str(self.height) \
-                            + " --ddim_steps " + str(self.steps) \
-                            + " --prompt \""
+                            + " --H " + str(self.height)
+
+                    # additional common params
+                    if int(self.cuda_device) > 0:
+                        base += " --device \"cuda:" + str(self.cuda_device) + "\""
+                    if self.sd_low_memory.lower() == "yes" and self.sd_low_mem_turbo.lower() == "yes":
+                        base += " --turbo"
+                    base += " --skip_grid" \
+                        + " --n_iter " + str(self.samples) \
+                        + " --n_samples " + str(self.batch_size) \
+                        + " --prompt \""
 
                 else:
                     # vqgan & diffusion shared initial setup
@@ -428,22 +459,17 @@ class Controller:
                         work += " -drn50x16 " + self.d_use_rn50x16
                         work += " -drn50x64 " + self.d_use_rn50x64
 
-                    seed = random.randint(1, 2**32) - 1
+                    seed = random.randint(1, 2**32) - 1000
 
                     # Stable Diffusion -specific params:
-                    if self.process == "stablediff":
-                        work += " --scale " + str(self.scale)
-                        work += " --n_samples " + str(self.batch_size)
-
-                        if int(self.cuda_device) > 0:
-                            work += " --device \"cuda:" + str(self.cuda_device) + "\""
-
                     if self.process == "stablediff":
                         # Stable Diffusion -specific closing args:
                         if self.input_image != "":
                             work += " --init-img \"../" + self.input_image + "\"" + " --strength " + str(self.strength)
-                        work += " --seed " + str(seed) + " --skip_grid" + " --n_iter " + str(self.samples) + " --outdir ../" + outdir
-                        # note that SD doesn't allow specifying output filename
+                        work += " --ddim_steps " + str(self.steps) \
+                            + " --scale " + str(self.scale) \
+                            + " --seed " + str(seed) \
+                            + " --outdir ../" + outdir
 
                     else:
                         # vqgan and diffusion -shared closing args:
@@ -581,6 +607,11 @@ class Controller:
                     value = SD_LOW_MEMORY
                 self.sd_low_memory = value
 
+            elif command == 'sd_low_mem_turbo':
+                if value == '':
+                    value = SD_LOW_MEM_TURBO
+                self.sd_low_mem_turbo = value
+
             elif command == 'use_upscale':
                 if value == '':
                     value = USE_UPSCALE
@@ -596,6 +627,11 @@ class Controller:
                     value = UPSCALE_FACE_ENH
                 self.upscale_face_enh = value
 
+            elif command == 'upscale_keep_org':
+                if value == '':
+                    value = UPSCALE_KEEP_ORG
+                self.upscale_keep_org = value
+
             else:
                 print("\n*** WARNING: prompt file command not recognized: " + command.upper() + " (it will be ignored!) ***\n")
                 time.sleep(1.5)
@@ -605,7 +641,12 @@ class Controller:
         self.worker_idle = False
         with print_lock:
             print("\n\nWorker starting job #" + str(self.jobs_done+1) + ":")
-        thread = Worker(command, self.use_upscale, self.upscale_amount, self.upscale_face_enh, self.on_work_done)
+        thread = Worker(command, \
+            self.use_upscale, \
+            self.upscale_amount, \
+            self.upscale_face_enh, \
+            self.upscale_keep_org, \
+            self.on_work_done)
         thread.start()
 
     # callback for worker threads when finished

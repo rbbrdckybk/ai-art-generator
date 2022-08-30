@@ -28,6 +28,7 @@ else:
     os.environ['PYTHONPATH'] = os.pathsep + (cwd + "/latent-diffusion") + os.pathsep + (cwd + "/taming-transformers") + os.pathsep + (cwd + "/CLIP")
 
 SD_LOW_MEMORY = "no"    # use low-memory repo?
+SD_LOW_MEM_TURBO = "no" # faster at the cost of ~1GB VRAM (only when SD_LOW_MEMORY = "yes")
 WIDTH = 512             # output image width, default is 512
 HEIGHT = 512            # output image height, default is 512
 STEPS = 80              # number of steps, default = 50
@@ -38,9 +39,10 @@ BATCH_SIZE = 1          # number of images to generate per sample, huge VRAM inc
 MIN_STRENGTH = 0.50     # min strength of starting image influence
 MAX_STRENGTH = 0.50     # max strength of starting image influence
 DELIM = " "             # default prompt delimiter
-USE_UPSCALE = "no"      # upscale output images via ESRGAN/GFPGAN? (STABLE DIFFUSION ONLY)
-UPSCALE_AMOUNT = 2.0    # amount to upscale, default is 2.0x (STABLE DIFFUSION ONLY)
-UPSCALE_FACE_ENH = "no" # use GFPGAN, optimized for faces (STABLE DIFFUSION ONLY)
+USE_UPSCALE = "no"      # upscale output images via ESRGAN/GFPGAN?
+UPSCALE_AMOUNT = 2.0    # amount to upscale, default is 2.0x
+UPSCALE_FACE_ENH = "no" # use GFPGAN, optimized for faces
+UPSCALE_KEEP_ORG = "no" # save the original non-upscaled image when using upscaling?
 
 # directory to write finished output image files
 # subdirectories will be automatically created under this folder organized by date
@@ -72,10 +74,13 @@ class Worker(threading.Thread):
 
         do_upscale = False
         face_enh = False
+        upscale_keep_orig = False
         if USE_UPSCALE.lower() == "yes":
             do_upscale = True
             if UPSCALE_FACE_ENH.lower() == "yes":
                 face_enh = True
+            if UPSCALE_KEEP_ORG.lower() == "yes":
+                upscale_keep_orig = True
 
         # invoke Stable Diffusion
         if sys.platform == "win32" or os.name == 'nt':
@@ -96,8 +101,16 @@ class Worker(threading.Thread):
                         basef = f.replace(".png", "")
                         if basef[-2:] == "_u":
                             # this is an upscaled image, delete the original
+                            # or save it in /original if desired
                             if exists(fullfilepath + "/samples/" + basef[:-2] + ".png"):
-                                os.remove(fullfilepath + "/samples/" + basef[:-2] + ".png")
+                                if upscale_keep_orig:
+                                    # move the original to /original
+                                    orig_dir = fullfilepath + "/original"
+                                    Path(orig_dir).mkdir(parents=True, exist_ok=True)
+                                    os.replace(fullfilepath + "/samples/" + basef[:-2] + ".png", \
+                                        orig_dir + "/" + basef[:-2] + ".png")
+                                else:
+                                    os.remove(fullfilepath + "/samples/" + basef[:-2] + ".png")
 
         # find the new image(s) that SD created: re-name, process, and move them
         new_files = os.listdir(fullfilepath + "/samples")
@@ -106,6 +119,15 @@ class Worker(threading.Thread):
         # save just the essential prompt params to metadata
         meta_prompt = self.command.split(" --prompt ",1)[1]
         meta_prompt = meta_prompt.split(" --outdir ",1)[0]
+
+        if do_upscale:
+            upscale_text = "   (upscaled "
+            upscale_text += str(UPSCALE_AMOUNT) + "x via "
+            if face_enh:
+                upscale_text += "GFPGAN)"
+            else:
+                upscale_text += "ESRGAN)"
+            meta_prompt += upscale_text
 
         for f in new_files:
             if (".png" in f):
@@ -393,6 +415,11 @@ class PromptManager():
                             global SD_LOW_MEMORY
                             SD_LOW_MEMORY = value
 
+                    elif command == 'sd_low_mem_turbo':
+                        if value != '':
+                            global SD_LOW_MEM_TURBO
+                            SD_LOW_MEM_TURBO = value
+
                     elif command == 'use_upscale':
                         if value != '':
                             global USE_UPSCALE
@@ -407,6 +434,11 @@ class PromptManager():
                         if value != '':
                             global UPSCALE_FACE_ENH
                             UPSCALE_FACE_ENH = value
+
+                    elif command == 'upscale_keep_org':
+                        if value != '':
+                            global UPSCALE_KEEP_ORG
+                            UPSCALE_KEEP_ORG = value
 
                     elif command == 'delim':
                         if value != '':
@@ -496,6 +528,9 @@ def create_command(prompt, input_image, output_dir_ext):
 
     set_scale = round(random.uniform(float(MIN_SCALE), float(MAX_SCALE)), 1)
     set_strength = round(random.uniform(float(MIN_STRENGTH), float(MAX_STRENGTH)), 2)
+
+    if SD_LOW_MEMORY.lower() == "yes" and SD_LOW_MEM_TURBO.lower() == "yes":
+        base_command += " --turbo"
 
     command = base_command + " --skip_grid" \
         + " --n_iter " + str(SAMPLES) \
