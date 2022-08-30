@@ -1,12 +1,12 @@
 # AI Art Generator
 For automating the creation of large batches of AI-generated artwork locally. Put your GPU(s) to work cranking out AI-generated artwork 24/7 with the ability to automate large prompt queues combining user-selected subjects, styles/artists, and more! More info on which models are available after the sample pics.  
 Some example images that I've created via this process (these are cherry-picked and sharpened):  
-<img src="/samples/sample01.jpg" width="367" height="220" alt="sample image created with Stable Diffusion process" title="sample image created with Stable Diffusion process">
-<img src="/samples/sample02.jpg" width="220" height="220" alt="sample image created with Stable Diffusion process" title="sample image created with Stable Diffusion process">
-<img src="/samples/sample03.jpg" width="220" height="220" alt="sample image created with VQGAN+CLIP process" title="sample image created with VQGAN+CLIP process">
-<img src="/samples/sample04.jpg" width="220" height="220" alt="sample image created with Stable Diffusion process" title="sample image created with Stable Diffusion process">
-<img src="/samples/sample05.jpg" width="220" height="220" alt="sample image created with Stable Diffusion process" title="sample image created with Stable Diffusion process">
-<img src="/samples/sample06.jpg" width="367" height="220" alt="sample image created with CLIP-guided diffusion process" title="sample image created with CLIP-guided diffusion process">  
+<img src="/samples/sample01.jpg" width="367" height="220" alt="sample image 1" title="sample image 1">
+<img src="/samples/sample02.jpg" width="220" height="220" alt="sample image 2" title="sample image 2">
+<img src="/samples/sample03.jpg" width="220" height="220" alt="sample image 3" title="sample image 3">
+<img src="/samples/sample04.jpg" width="220" height="220" alt="sample image 4" title="sample image 4">
+<img src="/samples/sample05.jpg" width="220" height="220" alt="sample image 5" title="sample image 5">
+<img src="/samples/sample06.jpg" width="367" height="220" alt="sample image 6" title="sample image 6">  
 Note that I did not create or train the models used in this project, nor was I involved in the original coding. I've simply modified the original colab versions so they'll run locally and added some support for automation.
 Models currently supported, with links to their original implementations:
  * [Stable Diffusion](https://github.com/CompVis/stable-diffusion)
