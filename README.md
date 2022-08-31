@@ -181,6 +181,7 @@ For **[setting to change]**, valid directives are:
  * ITERATIONS (vqgan/diffusion only)
  * CUTS (vqgan/diffusion only)
  * INPUT_IMAGE
+ * SEED
  * LEARNING_RATE (vqgan only)
  * TRANSFORMER (vqgan only)
  * OPTIMISER (vqgan only)
@@ -195,6 +196,7 @@ For **[setting to change]**, valid directives are:
  * UPSCALE_AMOUNT (stablediff only)
  * UPSCALE_FACE_ENH (stablediff only)
  * UPSCALE_KEEP_ORG (stablediff only)
+ * REPEAT
 
 Some examples: 
 ```
@@ -220,6 +222,10 @@ Whatever you specify here MUST exist in the checkpoints directory as a .ckpt and
 !INPUT_IMAGE = samples/face-input.jpg
 ```
 This will use samples/face-input.jpg (or whatever image you specify) as the starting image, instead of the default random noise. Input images must be the same aspect ratio as your output images for good results. Note that when using with Stable Diffusion the output image size will be the same as your input image (your height/width settings will be ignored).
+```
+!SEED = 42
+```
+This will use 42 as the input seed value, instead of a random number (the default). Useful for reproducibility - when all other parameters are identical, using the same seed value should produce an identical image across multiple runs. Set to nothing or -1 to reset to using a random value.
 ```
 !INPUT_IMAGE = 
 ```
@@ -260,5 +266,9 @@ Whether or not to use GFPGAN (vs default ESRGAN) when upscaling. GFPGAN provides
 !UPSCALE_KEEP_ORG = no
 ```
 Keep the original unmodified image when upscaling (yes/no)? If set to no (the default), the original image will be deleted. If set to yes, the original image will be saved in an **/original** subdirectory of the image output folder.
+```
+!REPEAT = no
+```
+When all jobs in the prompt file are finished, restart back at the top of the file (yes/no)? Default is no, which will simply terminate execution when all jobs are complete.
 
 TODO: finish settings examples & add usage tips/examples, document random_art.py
