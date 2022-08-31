@@ -61,6 +61,7 @@ USE_UPSCALE = "no"      # upscale output images via ESRGAN/GFPGAN? (STABLE DIFFU
 UPSCALE_AMOUNT = 2.0    # amount to upscale, default is 2.0x (STABLE DIFFUSION ONLY)
 UPSCALE_FACE_ENH = "no" # use GFPGAN, optimized for faces (STABLE DIFFUSION ONLY)
 UPSCALE_KEEP_ORG = "no" # save the original non-upscaled image when using upscaling?
+REPEAT = "no"           # when finished with all prompts, start back at beginning? (yes/no)
 
 # Prevent threads from printing at same time.
 print_lock = threading.Lock()
@@ -300,6 +301,7 @@ class Controller:
         self.upscale_amount = UPSCALE_AMOUNT
         self.upscale_face_enh = UPSCALE_FACE_ENH
         self.upscale_keep_org = UPSCALE_KEEP_ORG
+        self.repeat = REPEAT
         self.work_queue = deque()
         self.work_done = False
         self.worker_idle = True
@@ -641,6 +643,11 @@ class Controller:
                     value = UPSCALE_KEEP_ORG
                 self.upscale_keep_org = value
 
+            elif command == 'repeat':
+                if value == '':
+                    value = REPEAT
+                self.repeat = value
+
             else:
                 print("\n*** WARNING: prompt file command not recognized: " + command.upper() + " (it will be ignored!) ***\n")
                 time.sleep(1.5)
@@ -746,6 +753,8 @@ if __name__ == '__main__':
             exit()
 
         control = Controller(prompt_filename)
+        passes = 0
+
         # main work loop
         while not control.work_done:
             # worker is idle, start some work
@@ -756,8 +765,17 @@ if __name__ == '__main__':
                     control.do_work(new_work)
                 else:
                     # no more prompts to work on
-                    print('\nAll work done!')
-                    control.work_done = True
+                    passes += 1
+                    if (passes > 1):
+                        print('\nAll work done (completed ' + str(passes) + ' runs through prompt file)!')
+                    else:
+                        print('\nAll work done!')
+
+                    if control.repeat.lower() == 'yes':
+                        print('Restarting from top of prompt file!')
+                        control = Controller(prompt_filename)
+                    else:
+                        control.work_done = True
             else:
                 time.sleep(.01)
 
