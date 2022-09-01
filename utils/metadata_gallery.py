@@ -45,7 +45,7 @@ class PromptFile:
 
     # add prompt block
     def add_prompt_section(self, prompt, width, height, steps, scale, initimg, initstr, upscale_use, upscale_amt, upscale_face):
-        self.write("\n# *********************************************** [prompt " + str(self.prompt_count+1) + " ] ***********************************************\n")
+        self.write("\n# *********************************************** [ prompt " + str(self.prompt_count+1) + " ] ***********************************************\n")
         self.write("!WIDTH = " + str(width))
         self.write("!HEIGHT = " + str(height))
         self.write("!STEPS = " + str(steps))
@@ -63,6 +63,9 @@ class PromptFile:
 
     # cleanup and close prompt file
     def cleanup(self):
+        self.write("\n# *******************************************************************************\n")
+        self.write("[styles]")
+        self.write(",")
         self.f.close()
 
     # write specified text to prompt file
