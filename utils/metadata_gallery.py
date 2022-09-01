@@ -39,6 +39,7 @@ class PromptFile:
         self.upscale_amount = 0
         self.upscale_face_enh = ""
         self.ignore_input_images = False
+        self.use_low_memory = False
 
         if opt.o_size != "":
             if 'x' in opt.o_size:
@@ -77,6 +78,9 @@ class PromptFile:
         if opt.ignore_input_images:
             self.ignore_input_images = True
 
+        if opt.use_low_memory:
+            self.use_low_memory = True
+
         self.init_prompts()
 
     # create the prompt file, populate it
@@ -91,7 +95,10 @@ class PromptFile:
         self.write("# *******************************************************************************")
         self.write("[subjects]\n")
         self.write("!PROCESS = stablediff")
-        self.write("!SD_LOW_MEMORY = no            # change to yes if you need the low-memory version")
+        if self.use_low_memory:
+            self.write("!SD_LOW_MEMORY = yes")
+        else:
+            self.write("!SD_LOW_MEMORY = no            # change to yes if you need the low-memory version")
         self.write("!UPSCALE_KEEP_ORG = yes        # keep original when upscaling?")
         self.write("!SAMPLES = 3                   # default 3 images per prompt, change if desired")
         self.write("!REPEAT = yes")
@@ -502,6 +509,12 @@ if __name__ == '__main__':
         "--ignore_input_images",
         action='store_true',
         help="will not write input image directives to generated prompt file if set"
+    )
+
+    parser.add_argument(
+        "--use_low_memory",
+        action='store_true',
+        help="will set !SD_LOW_MEMORY = yes in the output prompt file"
     )
 
     opt = parser.parse_args()
