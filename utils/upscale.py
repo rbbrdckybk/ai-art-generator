@@ -21,11 +21,11 @@ from PIL import Image
 #import warnings
 #warnings.filterwarnings("ignore")
 
-def upscale(in_dir, scale, do_face_enhance):
+def upscale(in_dir, scale, do_face_enhance, do_single):
     print("\nStarting...")
     command = "python inference_realesrgan.py -n RealESRGAN_x4plus --suffix u -s "
 
-    # check that scale is a valid float, otherwise use default scale of 4
+    # check that scale is a valid float, otherwise use default scale of 2
     try :
         float(scale)
         command += str(scale)
@@ -42,14 +42,25 @@ def upscale(in_dir, scale, do_face_enhance):
 
     # make output dir if it doesn't exist
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-
     cwd = os.getcwd().replace('utils', '')
     esrgan_dir = cwd + 'Real-ESRGAN'
-    print(esrgan_dir)
-    print ("Invoking Real-ESRGAN: " + command)
 
     # invoke Real-ESRGAN
-    subprocess.call(command, cwd=(esrgan_dir), stderr=subprocess.DEVNULL)
+    if not do_single:
+        print ("Invoking Real-ESRGAN: " + command)
+        subprocess.call(command, cwd=(esrgan_dir), stderr=subprocess.DEVNULL)
+    else:
+        # we're going to call ESRGAN once per image
+        orig_command = command
+        new_files = os.listdir(in_dir)
+        for f in new_files:
+            file_ext = f[-4:]
+            if (file_ext == ".jpg") or (file_ext == ".png"):
+                # this is an image, let's try to upscale it
+                command = orig_command.replace(" -i " + in_dir, " -i " + in_dir + "\\" + f)
+                print ("Invoking Real-ESRGAN (per image): " + command)
+                subprocess.call(command, cwd=(esrgan_dir), stderr=subprocess.DEVNULL)
+
 
     # create text string to append to metadata
     upscale_text = " (upscaled "
@@ -78,10 +89,12 @@ def upscale(in_dir, scale, do_face_enhance):
                     im = orig_Image.convert('RGB')
                     exif = im.getexif()
 
-                    try:
-                        exif[0x9c9d] = exif[0x9c9d] + upscale_text.encode('utf16')
-                    except KeyError as e:
-                        exif[0x9c9d] = upscale_text.encode('utf16')
+                    # only modify the upscale exif if upscale factor > 1.0
+                    if scale > 1:
+                        try:
+                            exif[0x9c9d] = exif[0x9c9d] + upscale_text.encode('utf16')
+                        except KeyError as e:
+                            exif[0x9c9d] = upscale_text.encode('utf16')
 
                     # save to the new image
                     new_Image = Image.open(out_dir + "/" + f)
@@ -126,6 +139,12 @@ if __name__ == '__main__':
         help="use face enhancement (GFPGAN)"
     )
 
+    parser.add_argument(
+        "--single",
+        action='store_true',
+        help="invoke ESRGAN once per image? (slower, try if you get out of memory errors)"
+    )
+
     opt = parser.parse_args()
 
     if opt.imgdir != "":
@@ -134,7 +153,7 @@ if __name__ == '__main__':
             print("Please specify a valid directory containing images.")
             exit()
         else:
-            upscale(opt.imgdir, opt.amount, opt.faces)
+            upscale(opt.imgdir, opt.amount, opt.faces, opt.single)
 
     else:
         print("\nUsage: python upscale.py --imgdir [directory containing images]")
