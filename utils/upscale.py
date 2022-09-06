@@ -34,7 +34,7 @@ def upscale(in_dir, scale, do_face_enhance, do_single):
 
     # append the input/output dir
     out_dir = in_dir + "\\upscaled"
-    command += " -i " + in_dir + " -o " + out_dir
+    command += " -i \"" + in_dir + "\" -o \"" + out_dir + "\""
 
     # whether to use GFPGAN for faces
     if do_face_enhance:
