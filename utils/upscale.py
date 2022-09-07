@@ -57,7 +57,7 @@ def upscale(in_dir, scale, do_face_enhance, do_single):
             file_ext = f[-4:]
             if (file_ext == ".jpg") or (file_ext == ".png"):
                 # this is an image, let's try to upscale it
-                command = orig_command.replace(" -i " + in_dir, " -i " + in_dir + "\\" + f)
+                command = orig_command.replace(" -i \"" + in_dir, " -i \"" + in_dir + "\\" + f)
                 print ("Invoking Real-ESRGAN (per image): " + command)
                 subprocess.call(command, cwd=(esrgan_dir), stderr=subprocess.DEVNULL)
 
