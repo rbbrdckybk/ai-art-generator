@@ -131,31 +131,39 @@ class Worker(threading.Thread):
             else:
                 subprocess.call(shlex.split(self.command), cwd=(cwd + '/stable-diffusion'))
 
+            gpu_id = '0'
+            if '--device' in self.command:
+                temp = self.command.split('--device', 1)[1]
+                temp = temp.split(' --', 1)[0]
+                gpu_id = temp.strip()
+
+            samples_dir = fullfilepath + "/gpu_" + gpu_id
+
             if do_upscale:
-                new_files = os.listdir(fullfilepath + "/samples")
+                new_files = os.listdir(samples_dir)
                 if len(new_files) > 0:
-                    upscale(self.upscale_amount, fullfilepath + "/samples", face_enh)
+                    upscale(self.upscale_amount, samples_dir, gpu_id, face_enh)
 
                     # remove originals if upscaled version present
-                    new_files = os.listdir(fullfilepath + "/samples")
+                    new_files = os.listdir(samples_dir)
                     for f in new_files:
                         if (".png" in f):
                             basef = f.replace(".png", "")
                             if basef[-2:] == "_u":
                                 # this is an upscaled image, delete the original
                                 # or save it in /original if desired
-                                if exists(fullfilepath + "/samples/" + basef[:-2] + ".png"):
+                                if exists(os.path.join(samples_dir, basef[:-2] + ".png")):
                                     if upscale_keep_orig:
                                         # move the original to /original
-                                        orig_dir = fullfilepath + "/original"
+                                        orig_dir = os.path.join(fullfilepath + "original")
                                         Path(orig_dir).mkdir(parents=True, exist_ok=True)
-                                        os.replace(fullfilepath + "/samples/" + basef[:-2] + ".png", \
-                                            orig_dir + "/" + basef[:-2] + ".png")
+                                        os.replace(os.path.join(samples_dir, basef[:-2] + ".png"), \
+                                            os.path.join(orig_dir, basef[:-2] + ".png"))
                                     else:
-                                        os.remove(fullfilepath + "/samples/" + basef[:-2] + ".png")
+                                        os.remove(os.path.join(samples_dir, basef[:-2] + ".png"))
 
             # find the new image(s) that SD created: re-name, process, and move them
-            new_files = os.listdir(fullfilepath + "/samples")
+            new_files = os.listdir(samples_dir)
             nf_count = 0
             exec_time = time.time() - start_time
             for f in new_files:
@@ -185,7 +193,7 @@ class Worker(threading.Thread):
                         else:
                             upscale_text += "ESRGAN)"
 
-                    pngImage = PngImageFile(fullfilepath + "/samples/" + f)
+                    pngImage = PngImageFile(samples_dir + '/' + f)
                     im = pngImage.convert('RGB')
                     exif = im.getexif()
                     exif[0x9286] = meta_prompt
@@ -194,13 +202,13 @@ class Worker(threading.Thread):
                     exif[0x0131] = "https://github.com/rbbrdckybk/ai-art-generator"
                     newfilename = dt.now().strftime('%Y%m-%d%H-%M%S-') + str(nf_count)
                     nf_count += 1
-                    im.save(fullfilepath + "/" + newfilename + ".jpg", exif=exif, quality=88)
-                    if exists(fullfilepath + "/samples/" + f):
-                        os.remove(fullfilepath + "/samples/" + f)
+                    im.save(os.path.join(fullfilepath, newfilename + ".jpg"), exif=exif, quality=88)
+                    if exists(os.path.join(samples_dir, f)):
+                        os.remove(os.path.join(samples_dir, f))
 
             # remove the /samples dir if empty
             try:
-                os.rmdir(fullfilepath + "/samples")
+                os.rmdir(samples_dir)
             except OSError as e:
                 # nothing to do here, we only want to remove the dir
                 # if it's completely empty
@@ -237,7 +245,7 @@ class Worker(threading.Thread):
 # scale - upscale by this amount, default is 2.0x
 # dir - upscale all images in this folder
 # do_face_enhance - True/False use GFPGAN (for faces)
-def upscale(scale, dir, do_face_enhance):
+def upscale(scale, dir, gpu_id, do_face_enhance):
     command = "python inference_realesrgan.py -n RealESRGAN_x4plus --suffix u -s "
 
     # check that scale is a valid float, otherwise use default scale of 4
@@ -247,8 +255,11 @@ def upscale(scale, dir, do_face_enhance):
     except :
         command += "2"
 
+    # specify gpu
+    command += " -g " + gpu_id
+
     # append the input/output dir
-    command += " -i ..//" + dir + " -o ..//" + dir
+    command += " -i ../" + dir + " -o ../" + dir
 
     # whether to use GFPGAN for faces
     if do_face_enhance:
@@ -259,7 +270,8 @@ def upscale(scale, dir, do_face_enhance):
 
     # invoke Real-ESRGAN
     if sys.platform == "win32" or os.name == 'nt':
-        subprocess.call(shlex.split(command), cwd=(cwd + '\Real-ESRGAN'), stderr=subprocess.DEVNULL)
+        #subprocess.call(shlex.split(command), cwd=(cwd + '\Real-ESRGAN'), stderr=subprocess.DEVNULL)
+        subprocess.call(shlex.split(command), cwd=(cwd + '\Real-ESRGAN'))
     else:
         subprocess.call(shlex.split(command), cwd=(cwd + '/Real-ESRGAN'), stderr=subprocess.DEVNULL)
 

@@ -90,30 +90,30 @@ class Worker(threading.Thread):
 
         fullfilepath = fullfilepath.replace("../","")
         if do_upscale:
-            new_files = os.listdir(fullfilepath + "/samples")
+            new_files = os.listdir(fullfilepath + "/gpu_0")
             if len(new_files) > 0:
-                upscale(UPSCALE_AMOUNT, fullfilepath + "/samples", face_enh)
+                upscale(UPSCALE_AMOUNT, fullfilepath + "/gpu_0", face_enh)
 
                 # remove originals if upscaled version present
-                new_files = os.listdir(fullfilepath + "/samples")
+                new_files = os.listdir(fullfilepath + "/gpu_0")
                 for f in new_files:
                     if (".png" in f):
                         basef = f.replace(".png", "")
                         if basef[-2:] == "_u":
                             # this is an upscaled image, delete the original
                             # or save it in /original if desired
-                            if exists(fullfilepath + "/samples/" + basef[:-2] + ".png"):
+                            if exists(fullfilepath + "/gpu_0/" + basef[:-2] + ".png"):
                                 if upscale_keep_orig:
                                     # move the original to /original
                                     orig_dir = fullfilepath + "/original"
                                     Path(orig_dir).mkdir(parents=True, exist_ok=True)
-                                    os.replace(fullfilepath + "/samples/" + basef[:-2] + ".png", \
+                                    os.replace(fullfilepath + "/gpu_0/" + basef[:-2] + ".png", \
                                         orig_dir + "/" + basef[:-2] + ".png")
                                 else:
-                                    os.remove(fullfilepath + "/samples/" + basef[:-2] + ".png")
+                                    os.remove(fullfilepath + "/gpu_0/" + basef[:-2] + ".png")
 
         # find the new image(s) that SD created: re-name, process, and move them
-        new_files = os.listdir(fullfilepath + "/samples")
+        new_files = os.listdir(fullfilepath + "/gpu_0")
         nf_count = 0
 
         # save just the essential prompt params to metadata
@@ -131,7 +131,7 @@ class Worker(threading.Thread):
 
         for f in new_files:
             if (".png" in f):
-                pngImage = PngImageFile(fullfilepath + "/samples/" + f)
+                pngImage = PngImageFile(fullfilepath + "/gpu_0/" + f)
                 im = pngImage.convert('RGB')
                 exif = im.getexif()
                 exif[0x9286] = meta_prompt
@@ -141,10 +141,10 @@ class Worker(threading.Thread):
                 newfilename = dt.now().strftime('%Y%m-%d%H-%M%S-') + str(nf_count)
                 nf_count += 1
                 im.save(fullfilepath + "/" + newfilename + ".jpg", exif=exif, quality=88)
-                if exists(fullfilepath + "/samples/" + f):
-                    os.remove(fullfilepath + "/samples/" + f)
+                if exists(fullfilepath + "/gpu_0/" + f):
+                    os.remove(fullfilepath + "/gpu_0/" + f)
         try:
-            os.rmdir(fullfilepath + "/samples")
+            os.rmdir(fullfilepath + "/gpu_0")
         except OSError as e:
             # nothing to do here, we only want to remove the dir if empty
             pass
