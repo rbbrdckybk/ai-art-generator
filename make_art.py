@@ -441,6 +441,10 @@ class Controller:
                 input_name = input_name[len(input_name)-1]
                 outdir="output/[[date]]" + '-' + slugify(input_name.split('.', 1)[0])
 
+                # quick fix for empty/non-existant styles
+                if len(self.styles) == 0:
+                    self.styles.append("")
+
                 # queue a work item for each style/artist
                 for style in self.styles:
                     if self.process == "stablediff":
