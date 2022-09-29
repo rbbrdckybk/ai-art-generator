@@ -2,6 +2,12 @@
 
 Starting this ~8 months after I created the repo, but I'll do my best to keep this updated with major changes going forward!
 
+
+## [2022.09.28]
+### Fixed
+- Forced ESRGAN upscaling to use the same GPU device that was used to create the original artwork to avoid an issue where multiple processes were trying to use the same GPU.
+- Fixed a bug that would cause problems if the [style] section of a standard prompt file was left empty or ommitted.
+
 ## [2022.08.29]
 ### Added
 - Integrated optional [ESRGAN/GFPGAN](https://github.com/xinntao/Real-ESRGAN) upscaling for use with Stable Diffusion (see [docs](https://github.com/rbbrdckybk/ai-art-generator#advanced-usage)).
