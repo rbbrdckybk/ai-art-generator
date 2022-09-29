@@ -1,3 +1,8 @@
+# 2022-09-28 Update:
+Just a note that I've launched [Dream Factory](https://github.com/rbbrdckybk/dream-factory), a significant upgrade to this. It's got an (optional) GUI, true simultaneous multi-GPU support, an integrated gallery with full EXIF metadata support, and many other new [features](https://github.com/rbbrdckybk/dream-factory#features). 
+
+I dropped VQGAN and Disco Diffusion support to focus on Stable Diffusion, so if you want VQGAN and/or Disco Diffusion you should stick with this for now. Otherwise I encourage everyone to migrate to Dream Factory! I'll continue to patch bug fixes on this repo but I likely won't be adding new features going foward.
+
 # AI Art Generator
 For automating the creation of large batches of AI-generated artwork locally. Put your GPU(s) to work cranking out AI-generated artwork 24/7 with the ability to automate large prompt queues combining user-selected subjects, styles/artists, and more! More info on which models are available after the sample pics.  
 Some example images that I've created via this process (these are cherry-picked and sharpened):  
