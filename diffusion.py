@@ -106,7 +106,7 @@ def createPath(filepath):
 output_path = "output"
 output_filename = "output.png"
 
-# support path conventions on both windows/*nix
+# support path conventions on both windows/unix
 if '/' in iargs.output:
     output_filename = iargs.output[iargs.output.rindex('/')+1:]
     output_path = iargs.output.replace(output_filename,'')[:-1]
